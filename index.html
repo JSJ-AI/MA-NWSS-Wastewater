@@ -3,15 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>MA NWSS Ã¢ÂÂ Wastewater Surveillance</title>
+<title>MA NWSS — Wastewater Surveillance</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-:root{--bg:#0a0e1a;--sur:#111827;--sur2:#1a2235;--brd:#1e2d47;--txt:#e8edf5;--mut:#6b7a99;--acc:#4f9cff;--ok:#22c55e;--warn:#f59e0b;--bad:#ef4444;
---lvl-vlo:#a78bfa;--lvl-lo:#38bdf8;--lvl-mod:#f59e0b;--lvl-hi:#f97316;--lvl-vhi:#ef4444;--lvl-nd:#6b7a99;}
+:root{--bg:#0a0e1a;--sur:#111827;--sur2:#1a2235;--brd:#1e2d47;--txt:#e8edf5;--mut:#6b7a99;--acc:#4f9cff;--ok:#22c55e;--bad:#ef4444;--lvl-vlo:#a78bfa;--lvl-lo:#38bdf8;--lvl-mod:#f59e0b;--lvl-hi:#f97316;--lvl-vhi:#ef4444;--lvl-nd:#6b7a99;}
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
 .hdr{display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--sur);border-bottom:1px solid var(--brd);flex-shrink:0;flex-wrap:wrap;}
 .logo{font-weight:700;font-size:17px;color:var(--txt);white-space:nowrap;}.logo span{color:var(--acc);}
@@ -22,17 +20,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);height
 .clk{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--mut);}
 .btn{padding:4px 9px;border:1px solid var(--brd);background:var(--sur2);color:var(--mut);border-radius:5px;cursor:pointer;font-size:10px;font-weight:600;letter-spacing:.04em;transition:all .15s;white-space:nowrap;}
 .btn.on{background:rgba(79,156,255,.15);border-color:var(--acc);color:var(--acc);}.btn:hover{color:var(--txt);border-color:var(--mut);}
-.main-tabs{display:flex;background:var(--sur);border-bottom:1px solid var(--brd);flex-shrink:0;}
-.main-tab{padding:9px 18px;font-size:12px;font-weight:700;color:var(--mut);cursor:pointer;border-bottom:2px solid transparent;letter-spacing:.04em;transition:all .15s;}
+.main-tabs{display:flex;background:var(--sur);border-bottom:1px solid var(--brd);flex-shrink:0;overflow-x:auto;}
+.main-tab{padding:9px 14px;font-size:11px;font-weight:700;color:var(--mut);cursor:pointer;border-bottom:2px solid transparent;letter-spacing:.04em;transition:all .15s;white-space:nowrap;}
 .main-tab.on{color:var(--acc);border-bottom-color:var(--acc);}
 .map-view{display:flex;flex:1;min-height:0;}.map-view.hidden{display:none;}
 #mwrap{flex:1;min-width:0;position:relative;}#map{width:100%;height:100%;}
 .hpop{position:absolute;z-index:200;background:var(--sur);border:1px solid var(--brd);border-radius:8px;padding:10px 12px;pointer-events:none;min-width:200px;max-width:270px;box-shadow:0 4px 24px rgba(0,0,0,.6);display:none;}
-.hpop-name{font-weight:700;font-size:13px;margin-bottom:3px;color:var(--txt);}
-.hpop-sub{font-size:10px;color:var(--mut);margin-bottom:5px;}
+.hpop-name{font-weight:700;font-size:13px;margin-bottom:3px;}.hpop-sub{font-size:10px;color:var(--mut);margin-bottom:5px;}
 .hpop-row{display:flex;align-items:center;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--brd);font-size:11px;}
-.hpop-row:last-child{border-bottom:none;}.hpop-lbl{color:var(--mut);font-size:10px;}
-.hpop-val{font-weight:600;font-family:'JetBrains Mono',monospace;font-size:11px;}
+.hpop-row:last-child{border-bottom:none;}.hpop-lbl{color:var(--mut);font-size:10px;}.hpop-val{font-weight:600;font-family:'JetBrains Mono',monospace;font-size:11px;}
 .panel{width:290px;flex-shrink:0;background:var(--sur);border-left:1px solid var(--brd);display:flex;flex-direction:column;overflow:hidden;}
 .ptabs{display:flex;border-bottom:1px solid var(--brd);flex-shrink:0;}
 .ptab{flex:1;padding:8px 4px;text-align:center;font-size:10px;font-weight:700;color:var(--mut);cursor:pointer;border-bottom:2px solid transparent;letter-spacing:.04em;}
@@ -42,16 +38,19 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);height
 .srow:hover{background:var(--brd);}.sdot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
 .sname{flex:1;font-size:11px;font-weight:500;line-height:1.3;}.spop{font-size:9px;color:var(--mut);}
 .slvl{font-size:10px;font-weight:800;padding:3px 8px;border-radius:4px;white-space:nowrap;}
-.lvl-vlo{background:rgba(167,139,250,.2);color:#c4b0ff;border:1px solid rgba(167,139,250,.4);}.lvl-lo{background:rgba(56,189,248,.2);color:#70d4ff;border:1px solid rgba(56,189,248,.4);}
-.lvl-mod{background:rgba(245,158,11,.25);color:#ffd060;border:1px solid rgba(245,158,11,.5);}.lvl-hi{background:rgba(249,115,22,.3);color:#ffb060;border:1px solid rgba(249,115,22,.5);}
-.lvl-vhi{background:rgba(239,68,68,.35);color:#ff9090;border:1px solid rgba(239,68,68,.5);}.lvl-nd{background:rgba(107,122,153,.15);color:#8fa0c0;border:1px solid rgba(107,122,153,.3);}
-.analytics-view{flex:1;min-height:0;overflow-y:auto;display:none;padding:20px;}.analytics-view.on{display:block;}
+.lvl-vlo{background:rgba(167,139,250,.2);color:#c4b0ff;border:1px solid rgba(167,139,250,.4);}
+.lvl-lo{background:rgba(56,189,248,.2);color:#70d4ff;border:1px solid rgba(56,189,248,.4);}
+.lvl-mod{background:rgba(245,158,11,.25);color:#ffd060;border:1px solid rgba(245,158,11,.5);}
+.lvl-hi{background:rgba(249,115,22,.3);color:#ffb060;border:1px solid rgba(249,115,22,.5);}
+.lvl-vhi{background:rgba(239,68,68,.35);color:#ff9090;border:1px solid rgba(239,68,68,.5);}
+.lvl-nd{background:rgba(107,122,153,.15);color:#8fa0c0;border:1px solid rgba(107,122,153,.3);}
+.analytics-view,.trend-view,.chart-view{flex:1;min-height:0;overflow-y:auto;display:none;padding:20px;}
+.analytics-view.on,.trend-view.on,.chart-view.on{display:block;}
 .ana-top{display:flex;gap:14px;align-items:center;margin-bottom:18px;flex-wrap:wrap;}
 .ana-title{font-size:18px;font-weight:700;}.ana-sub{font-size:12px;color:var(--mut);margin-top:2px;}
 .ana-controls{display:flex;gap:8px;align-items:center;margin-left:auto;flex-wrap:wrap;}
 .sel{background:var(--sur2);border:1px solid var(--brd);color:var(--txt);border-radius:5px;padding:4px 8px;font-size:11px;font-family:'Inter',sans-serif;cursor:pointer;}
-.sel:focus{outline:none;border-color:var(--acc);}
-.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
 .site-card{background:var(--sur);border:1px solid var(--brd);border-radius:10px;overflow:hidden;}
 .card-hdr{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--brd);}
 .card-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;}.card-name{font-size:13px;font-weight:700;flex:1;}
@@ -63,72 +62,49 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);height
 .agent-name{color:var(--mut);font-size:9px;}.agent-val{font-weight:700;font-family:'JetBrains Mono',monospace;font-size:10px;}
 .legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;align-items:center;}
 .leg-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--mut);}.leg-dot{width:10px;height:10px;border-radius:50%;}
-.ftr{padding:4px 12px;background:var(--sur);border-top:1px solid var(--brd);display:flex;gap:14px;font-size:9px;color:var(--mut);flex-shrink:0;font-family:'JetBrains Mono',monospace;flex-wrap:wrap;}
-.ftr b{color:var(--txt);}
-/* TREND TABS */
-.trend-view{flex:1;min-height:0;overflow-y:auto;display:none;padding:20px;}.trend-view.on{display:block;}
-.trend-header{margin-bottom:20px;}
-.trend-title{font-size:22px;font-weight:700;margin-bottom:6px;color:#f0f4ff;}
-.trend-sub{font-size:13px;color:#8fa0c0;}
-.trend-table{width:100%;border-collapse:collapse;font-size:12px;}
+.trend-header{margin-bottom:20px;}.trend-title{font-size:22px;font-weight:700;color:#f0f4ff;margin-bottom:6px;}.trend-sub{font-size:13px;color:#8fa0c0;}
+.trend-table{width:100%;border-collapse:collapse;}
 .trend-table th{text-align:left;padding:10px 14px;border-bottom:2px solid var(--brd);color:#8fa0c0;font-size:11px;font-weight:700;letter-spacing:.06em;white-space:nowrap;}
 .trend-table td{padding:13px 14px;border-bottom:1px solid var(--brd);vertical-align:middle;}
-.trend-table tr:last-child td{border-bottom:none;}
 .trend-table tbody tr:hover td{background:var(--sur2);}
 .rank-num{font-size:16px;font-weight:700;color:#6b8cba;width:36px;text-align:center;}
-.site-cell-name{font-weight:700;font-size:15px;color:#f0f4ff;}
-.site-cell-sub{font-size:11px;color:#8fa0c0;margin-top:3px;}
+.site-cell-name{font-weight:700;font-size:15px;color:#f0f4ff;}.site-cell-sub{font-size:11px;color:#8fa0c0;margin-top:3px;}
 .bar-wrap{display:flex;align-items:center;gap:10px;}
 .bar-bg{flex:1;max-width:180px;height:14px;border-radius:7px;background:var(--sur2);overflow:hidden;}
-.bar-fill{height:100%;border-radius:7px;}
-.bar-val{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;min-width:70px;}
+.bar-fill{height:100%;border-radius:7px;}.bar-val{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;min-width:70px;}
 .lvl-pill{display:inline-block;padding:5px 10px;border-radius:5px;font-size:12px;font-weight:800;white-space:nowrap;letter-spacing:.03em;}
 .delta-cell{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;}
-
-/* CHART VIEW */
-.chart-view{flex:1;min-height:0;overflow-y:auto;display:none;padding:20px 24px;background:var(--bg);}
-.chart-view.on{display:block;}
-.chart-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
-.chart-title{font-size:22px;font-weight:700;color:#f0f4ff;}
-.chart-sub{font-size:13px;color:#8fa0c0;margin-top:4px;}
-.chart-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
-.chart-pathogen-btn{padding:5px 14px;border:1px solid var(--brd);background:var(--sur2);color:var(--mut);border-radius:20px;cursor:pointer;font-size:11px;font-weight:700;letter-spacing:.04em;transition:all .15s;}
-.chart-pathogen-btn.on{color:#fff;border-color:transparent;}
-.chart-sort-sel{background:var(--sur2);border:1px solid var(--brd);color:var(--txt);border-radius:5px;padding:5px 10px;font-size:11px;font-family:'Inter',sans-serif;cursor:pointer;}
-.chart-grid{display:grid;grid-template-columns:220px 1fr 200px;gap:0;align-items:stretch;}
-.chart-row{display:contents;}
-.chart-row:hover .town-label,.chart-row:hover .chart-bar-cell,.chart-row:hover .stats-cell{background:rgba(255,255,255,.03);}
-.town-label{display:flex;align-items:center;padding:6px 14px 6px 4px;border-bottom:1px solid rgba(255,255,255,.05);min-height:46px;}
-.town-name{font-size:13px;font-weight:600;color:#e0e8ff;line-height:1.2;}
-.town-pop{font-size:10px;color:#6b8cba;margin-top:2px;}
-.chart-bar-cell{display:flex;align-items:center;padding:6px 12px;border-bottom:1px solid rgba(255,255,255,.05);min-height:46px;}
-.chart-bar-outer{flex:1;height:22px;background:var(--sur2);border-radius:4px;overflow:hidden;position:relative;}
-.chart-bar-inner{height:100%;border-radius:4px;transition:width .5s cubic-bezier(.4,0,.2,1);position:relative;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;}
-.chart-bar-pct-label{font-size:10px;font-weight:700;color:rgba(255,255,255,.9);white-space:nowrap;}
-.stats-cell{display:flex;align-items:center;gap:12px;padding:6px 8px 6px 16px;border-bottom:1px solid rgba(255,255,255,.05);min-height:46px;}
-.stat-block{text-align:center;min-width:44px;}
-.stat-val{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;line-height:1.2;}
-.stat-lbl{font-size:9px;color:#6b8cba;letter-spacing:.05em;margin-top:1px;}
-.stat-rank{font-size:20px;font-weight:800;color:#6b8cba;min-width:32px;text-align:center;}
-.lvl-dot-sm{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
-.chart-header-row{display:contents;}
-.chart-header-row .town-label,.chart-header-row .chart-bar-cell,.chart-header-row .stats-cell{
-  padding-bottom:8px;border-bottom:2px solid var(--brd);font-size:10px;font-weight:700;color:#8fa0c0;letter-spacing:.06em;min-height:32px;}
-.chart-legend{display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
-.chart-legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:#8fa0c0;}
-.chart-legend-bar{width:20px;height:10px;border-radius:3px;}
-
-/* MAPLIBRE */
+.chart-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px;}
+.chart-title{font-size:22px;font-weight:700;color:#f0f4ff;}.chart-sub{font-size:13px;color:#8fa0c0;margin-top:4px;}
+.chart-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.cp-btn{padding:5px 14px;border:1px solid var(--brd);background:var(--sur2);color:var(--mut);border-radius:20px;cursor:pointer;font-size:11px;font-weight:700;transition:all .15s;}
+.cp-btn.on{color:#fff;border-color:transparent;}
+.chart-sort{background:var(--sur2);border:1px solid var(--brd);color:var(--txt);border-radius:5px;padding:5px 10px;font-size:11px;font-family:'Inter',sans-serif;cursor:pointer;}
+.chart-legend{display:flex;gap:14px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
+.cleg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#8fa0c0;}.cleg-bar{width:18px;height:10px;border-radius:3px;}
+.cgrid{width:100%;}
+.crow{display:grid;grid-template-columns:210px 1fr 230px;border-bottom:1px solid rgba(255,255,255,.05);}
+.crow:hover{background:rgba(255,255,255,.025);}.crow.hdr-row{border-bottom:2px solid var(--brd);}
+.c-town{display:flex;align-items:center;padding:8px 12px 8px 2px;}
+.c-town-name{font-size:13px;font-weight:600;color:#e0e8ff;line-height:1.2;}.c-town-sub{font-size:10px;color:#6b8cba;margin-top:2px;}
+.c-bar{display:flex;align-items:center;padding:8px 12px;}
+.c-bar-outer{flex:1;height:20px;background:var(--sur2);border-radius:4px;overflow:hidden;position:relative;}
+.c-bar-fill{height:100%;border-radius:4px;display:flex;align-items:center;}
+.c-bar-label{position:absolute;right:6px;font-size:10px;font-weight:700;color:rgba(255,255,255,.9);}
+.c-stats{display:grid;grid-template-columns:36px 64px 80px 58px;align-items:center;padding:8px 8px 8px 14px;gap:4px;}
+.stat-v{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;text-align:center;}
+.stat-l{font-size:9px;color:#6b8cba;letter-spacing:.05em;text-align:center;margin-top:1px;}
+.hdr-row .c-town,.hdr-row .c-bar{font-size:9px;font-weight:700;color:#6b8cba;letter-spacing:.06em;padding-top:6px;padding-bottom:6px;}
+.hdr-row .c-stats{display:grid;grid-template-columns:36px 64px 80px 58px;gap:4px;text-align:center;font-size:9px;font-weight:700;color:#6b8cba;letter-spacing:.06em;padding:6px 8px 6px 14px;}
+.ftr{padding:4px 12px;background:var(--sur);border-top:1px solid var(--brd);display:flex;gap:14px;font-size:9px;color:var(--mut);flex-shrink:0;font-family:'JetBrains Mono',monospace;flex-wrap:wrap;}
+.ftr b{color:var(--txt);}
 .maplibregl-popup-content{padding:12px;border-radius:8px;max-width:240px;font-family:'Inter',sans-serif;background:#0f172a;color:#e8edf5;border:1px solid #1e2d47;}
 .ppop-title{font-size:13px;font-weight:700;margin-bottom:8px;}
 .ppop-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #1e2d47;font-size:11px;}
 .ppop-row:last-child{border-bottom:none;}.ppop-lbl{color:#6b7a99;font-size:10px;font-weight:600;}
 .ppop-val{font-weight:600;font-family:'JetBrains Mono',monospace;}.maplibregl-popup-close-button{color:#e8edf5;}
 ::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-thumb{background:var(--brd);border-radius:2px;}
-</style>
-</head>
-<body>
-
+</style></head><body>
 <div class="hdr">
   <div class="logo">MA NWSS <span>Wastewater</span></div>
   <div class="live-badge"><div class="dot"></div>WEEKLY DATA</div>
@@ -141,24 +117,19 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);height
 </div>
 <div class="main-tabs">
   <div class="main-tab on" id="tab-map" onclick="switchView('map')">MAP</div>
-  <div class="main-tab" id="tab-ana" onclick="switchView('analytics')">ANALYTICS</div>
+  <div class="main-tab" id="tab-ana" onclick="switchView('ana')">ANALYTICS</div>
   <div class="main-tab" id="tab-ctrend" onclick="switchView('ctrend')">COVID TREND</div>
   <div class="main-tab" id="tab-ftrend" onclick="switchView('ftrend')">FLU A TREND</div>
   <div class="main-tab" id="tab-chart" onclick="switchView('chart')">CHART VIEW</div>
 </div>
-
-<!-- MAP VIEW -->
 <div class="map-view" id="view-map">
   <div id="mwrap"><div id="map"></div><div class="hpop" id="hpop"></div></div>
   <div class="panel">
-    <div class="ptabs">
-      <div class="ptab on" onclick="sPTab('sites')">SITES</div>
-      <div class="ptab" onclick="sPTab('legend')">LEGEND</div>
-    </div>
+    <div class="ptabs"><div class="ptab on" onclick="sPTab('sites')">SITES</div><div class="ptab" onclick="sPTab('legend')">LEGEND</div></div>
     <div class="pbody">
-      <div class="psec on" id="sec-sites"><div id="site-list" style="color:var(--mut);font-size:11px;padding:16px;text-align:center">Loading NWSS dataÃ¢ÂÂ¦</div></div>
+      <div class="psec on" id="sec-sites"><div id="site-list" style="color:var(--mut);font-size:11px;padding:16px;text-align:center">Loading…</div></div>
       <div class="psec" id="sec-legend">
-        <div style="font-size:11px;color:var(--mut);margin-bottom:10px;line-height:1.5">CDC NWSS Ã¢ÂÂ National Wastewater Surveillance System. Sites report weekly. Data updated every Friday.</div>
+        <div style="font-size:11px;color:var(--mut);margin-bottom:10px;line-height:1.5">CDC NWSS — National Wastewater Surveillance System. Sites report weekly.</div>
         <div style="font-size:10px;font-weight:700;color:var(--txt);margin-bottom:8px;letter-spacing:.06em">VIRAL ACTIVITY LEVEL</div>
         <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
           <div class="srow" style="cursor:default"><div class="sdot" style="background:var(--lvl-vhi)"></div><div class="sname">Very High</div><div class="slvl lvl-vhi">VERY HIGH</div></div>
@@ -166,27 +137,23 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);height
           <div class="srow" style="cursor:default"><div class="sdot" style="background:var(--lvl-mod)"></div><div class="sname">Moderate</div><div class="slvl lvl-mod">MOD</div></div>
           <div class="srow" style="cursor:default"><div class="sdot" style="background:var(--lvl-lo)"></div><div class="sname">Low</div><div class="slvl lvl-lo">LOW</div></div>
           <div class="srow" style="cursor:default"><div class="sdot" style="background:var(--lvl-vlo)"></div><div class="sname">Very Low</div><div class="slvl lvl-vlo">V.LOW</div></div>
-          <div class="srow" style="cursor:default"><div class="sdot" style="background:var(--lvl-nd)"></div><div class="sname">No / Limited Data</div><div class="slvl lvl-nd">N/D</div></div>
+          <div class="srow" style="cursor:default"><div class="sdot" style="background:var(--lvl-nd)"></div><div class="sname">No Data</div><div class="slvl lvl-nd">N/D</div></div>
         </div>
-        <div style="font-size:10px;font-weight:700;color:var(--txt);margin-bottom:8px;letter-spacing:.06em">MONITORED ANALYTES</div>
         <div style="font-size:10px;color:var(--mut);line-height:1.6;">
-          <b style="color:var(--txt)">Pathogens:</b> SARS-CoV-2, Influenza A, RSV, Mpox, Norovirus (select sites)<br>
-          <b style="color:var(--txt)">Method:</b> qPCR / ddPCR on 24-hr flow-weighted composite influent samples<br>
-          <b style="color:var(--txt)">Normalization:</b> Flow rate + population equivalents<br>
-          <b style="color:var(--txt)">Lead time:</b> ~4Ã¢ÂÂ7 days ahead of clinical case counts
+          <b style="color:var(--txt)">Pathogens:</b> SARS-CoV-2, Influenza A, RSV<br>
+          <b style="color:var(--txt)">Method:</b> qPCR/ddPCR on 24-hr flow-weighted composite influent<br>
+          <b style="color:var(--txt)">Lead time:</b> ~4–7 days ahead of clinical case counts
         </div>
       </div>
     </div>
   </div>
 </div>
-
-<!-- ANALYTICS VIEW -->
 <div class="analytics-view" id="view-ana">
   <div class="ana-top">
-    <div><div class="ana-title">Wastewater Signal by Site</div><div class="ana-sub">MA NWSS monitoring stations Ã¢ÂÂ latest week ÃÂ· CDC data</div></div>
+    <div><div class="ana-title">Wastewater Signal by Site</div><div class="ana-sub">MA NWSS monitoring stations · latest week · CDC data</div></div>
     <div class="ana-controls">
-      <select class="sel" id="ana-sort" onchange="renderAnalytics()"><option value="level">Sort: Level (highÃ¢ÂÂlow)</option><option value="name">Sort: Name (AÃ¢ÂÂZ)</option><option value="pop">Sort: Population</option></select>
-      <select class="sel" id="ana-filter" onchange="renderAnalytics()"><option value="all">All pathogens</option><option value="SARS-CoV-2">COVID-19</option><option value="Influenza A">Influenza A</option><option value="RSV">RSV</option></select>
+      <select class="sel" id="ana-sort" onchange="renderAnalytics()"><option value="level">Sort: Level</option><option value="name">Sort: Name</option><option value="pop">Sort: Population</option></select>
+      <select class="sel" id="ana-filter" onchange="renderAnalytics()"><option value="all">All pathogens</option><option value="SARS-CoV-2">COVID-19</option><option value="Influenza A">Flu A</option><option value="RSV">RSV</option></select>
     </div>
   </div>
   <div class="legend">
@@ -198,60 +165,41 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);height
     <div class="leg-item"><div class="leg-dot" style="background:var(--lvl-vlo)"></div>Very Low</div>
     <div class="leg-item"><div class="leg-dot" style="background:var(--lvl-nd)"></div>No Data</div>
   </div>
-  <div class="cards-grid" id="cards-grid"><div style="color:var(--mut);font-size:12px;padding:20px;text-align:center;grid-column:1/-1">Loading analyticsÃ¢ÂÂ¦</div></div>
+  <div class="cards-grid" id="cards-grid"><div style="color:var(--mut);padding:20px;text-align:center;grid-column:1/-1">Loading…</div></div>
 </div>
-
-<!-- COVID TREND VIEW -->
 <div class="trend-view" id="view-ctrend">
-  <div class="trend-header">
-    <div class="trend-title">COVID-19 Wastewater Trend</div>
-    <div class="trend-sub">Sites ranked by 3-measurement rolling average of percentile rank ÃÂ· highest signal first</div>
-  </div>
-  <table class="trend-table">
-    <thead><tr><th>#</th><th>Site</th><th>3-Week Avg Signal</th><th>Latest Level</th><th>15-day ÃÂ</th></tr></thead>
-    <tbody id="tbody-ctrend"><tr><td colspan="5" style="color:var(--mut);padding:20px;text-align:center">LoadingÃ¢ÂÂ¦</td></tr></tbody>
-  </table>
+  <div class="trend-header"><div class="trend-title">COVID-19 Wastewater Trend</div><div class="trend-sub">Sites ranked by 3-measurement rolling average · highest signal first</div></div>
+  <table class="trend-table"><thead><tr><th>#</th><th>Site</th><th>3-Week Avg Signal</th><th>Latest Level</th><th>15-day Δ</th></tr></thead>
+  <tbody id="tbody-ctrend"><tr><td colspan="5" style="color:var(--mut);padding:20px;text-align:center">Loading…</td></tr></tbody></table>
 </div>
-
-<!-- FLU A TREND VIEW -->
 <div class="trend-view" id="view-ftrend">
-  <div class="trend-header">
-    <div class="trend-title">Influenza A Wastewater Trend</div>
-    <div class="trend-sub">Sites ranked by 3-measurement rolling average of percentile rank ÃÂ· highest signal first</div>
-  </div>
-  <table class="trend-table">
-    <thead><tr><th>#</th><th>Site</th><th>3-Week Avg Signal</th><th>Latest Level</th><th>15-day ÃÂ</th></tr></thead>
-    <tbody id="tbody-ftrend"><tr><td colspan="5" style="color:var(--mut);padding:20px;text-align:center">LoadingÃ¢ÂÂ¦</td></tr></tbody>
-  </table>
+  <div class="trend-header"><div class="trend-title">Influenza A Wastewater Trend</div><div class="trend-sub">Sites ranked by 3-measurement rolling average · highest signal first</div></div>
+  <table class="trend-table"><thead><tr><th>#</th><th>Site</th><th>3-Week Avg Signal</th><th>Latest Level</th><th>15-day Δ</th></tr></thead>
+  <tbody id="tbody-ftrend"><tr><td colspan="5" style="color:var(--mut);padding:20px;text-align:center">Loading…</td></tr></tbody></table>
 </div>
-
+<div class="chart-view" id="view-chart">
+  <div class="chart-header">
+    <div><div class="chart-title">All Sites — Signal Comparison</div><div class="chart-sub">Horizontal bars · towns stacked vertically · percentile rank</div></div>
+    <div class="chart-controls">
+      <button class="cp-btn on" id="cpBtn-covid" onclick="setChartP('SARS-CoV-2')" style="background:#ef4444;color:#fff">COVID-19</button>
+      <button class="cp-btn" id="cpBtn-flu" onclick="setChartP('Influenza A')">FLU A</button>
+      <button class="cp-btn" id="cpBtn-rsv" onclick="setChartP('RSV')">RSV</button>
+      <select class="chart-sort" id="chart-sort" onchange="renderChart()">
+        <option value="signal">Sort: Signal</option><option value="name">Sort: Name</option>
+        <option value="pop">Sort: Population</option><option value="delta">Sort: 15-day</option>
+      </select>
+    </div>
+  </div>
+  <div class="chart-legend" id="chart-legend"></div>
+  <div class="cgrid" id="cgrid"><div style="color:var(--mut);padding:20px;text-align:center">Loading…</div></div>
+</div>
 <div class="ftr">
-  <span>Sites: <b id="ft-sites">Ã¢ÂÂ</b></span>
-  <span>Reporting: <b id="ft-rep">Ã¢ÂÂ</b></span>
-  <span>Updated: <b id="ft-upd">Ã¢ÂÂ</b></span>
-  <span style="margin-left:auto">CDC NWSS ÃÂ· MapLibre GL 4.7.1 ÃÂ· OpenFreeMap</span>
+  <span>Sites: <b id="ft-sites">—</b></span><span>Reporting: <b id="ft-rep">—</b></span>
+  <span>Updated: <b id="ft-upd">—</b></span>
+  <span style="margin-left:auto">CDC NWSS · MapLibre GL 4.7.1 · OpenFreeMap</span>
 </div>
 <script>
-const MA_SITES=[
-  {id:'USMA-01',name:'Deer Island (MWRA)',county:'Suffolk/Metro',pop:2500000,lat:42.3475,lng:-70.9710,wwtp:'MWRA Deer Island'},
-  {id:'USMA-02',name:'Upper Blackstone',county:'Worcester',pop:120000,lat:42.2526,lng:-71.7756,wwtp:'Upper Blackstone WWTP'},
-  {id:'USMA-03',name:'Greater Lawrence',county:'Essex',pop:110000,lat:42.7070,lng:-71.1631,wwtp:'Greater Lawrence Sanitary District'},
-  {id:'USMA-04',name:'Lowell Regional',county:'Middlesex',pop:130000,lat:42.6334,lng:-71.3162,wwtp:'Lowell Regional WWTP'},
-  {id:'USMA-05',name:'New Bedford',county:'Bristol',pop:103000,lat:41.6362,lng:-70.9342,wwtp:'New Bedford WWTP'},
-  {id:'USMA-06',name:'Springfield',county:'Hampden',pop:155000,lat:42.1015,lng:-72.5898,wwtp:'Springfield WWTP'},
-  {id:'USMA-07',name:'South Essex (Salem)',county:'Essex',pop:95000,lat:42.5195,lng:-70.9001,wwtp:'South Essex Sewerage District'},
-  {id:'USMA-08',name:'Brockton',county:'Plymouth',pop:107000,lat:42.0834,lng:-71.0184,wwtp:'Brockton Regional WPC'},
-  {id:'USMA-09',name:'Pittsfield',county:'Berkshire',pop:44000,lat:42.4501,lng:-73.2479,wwtp:'Pittsfield WWTP'},
-  {id:'USMA-10',name:'Holyoke',county:'Hampden',pop:40000,lat:42.2042,lng:-72.6162,wwtp:'Holyoke WWTP'},
-  {id:'USMA-11',name:'Leominster',county:'Worcester',pop:63000,lat:42.5251,lng:-71.7598,wwtp:'Leominster WWTP'},
-  {id:'USMA-12',name:'Fitchburg',county:'Worcester',pop:40000,lat:42.5834,lng:-71.8023,wwtp:'Fitchburg WWTP'},
-  {id:'USMA-13',name:'Barnstable (Cape Cod)',county:'Barnstable',pop:48000,lat:41.7001,lng:-70.3001,wwtp:'Barnstable WWTP'},
-  {id:'USMA-14',name:'Fall River',county:'Bristol',pop:94000,lat:41.7015,lng:-71.1550,wwtp:'Fall River WWTP'},
-  {id:'USMA-15',name:'Quincy / South Shore',county:'Norfolk',pop:95000,lat:42.2529,lng:-71.0023,wwtp:'Quincy WWTP'},
-  {id:'USMA-16',name:'Marlborough',county:'Middlesex',pop:38000,lat:42.3459,lng:-71.5523,wwtp:'Marlborough WWTP'},
-  {id:'USMA-17',name:'Chicopee',county:'Hampden',pop:55000,lat:42.1487,lng:-72.6079,wwtp:'Chicopee WWTP'},
-  {id:'USMA-18',name:'Taunton',county:'Bristol',pop:57000,lat:41.9001,lng:-71.0898,wwtp:'Taunton WWTP'},
-];
+const MA_SITES=[{id:'USMA-01',name:'Deer Island (MWRA)',county:'Suffolk/Metro',pop:2500000,lat:42.3475,lng:-70.9710,wwtp:'MWRA Deer Island'},{id:'USMA-02',name:'Upper Blackstone',county:'Worcester',pop:120000,lat:42.2526,lng:-71.7756,wwtp:'Upper Blackstone WWTP'},{id:'USMA-03',name:'Greater Lawrence',county:'Essex',pop:110000,lat:42.7070,lng:-71.1631,wwtp:'Greater Lawrence Sanitary District'},{id:'USMA-04',name:'Lowell Regional',county:'Middlesex',pop:130000,lat:42.6334,lng:-71.3162,wwtp:'Lowell Regional WWTP'},{id:'USMA-05',name:'New Bedford',county:'Bristol',pop:103000,lat:41.6362,lng:-70.9342,wwtp:'New Bedford WWTP'},{id:'USMA-06',name:'Springfield',county:'Hampden',pop:155000,lat:42.1015,lng:-72.5898,wwtp:'Springfield WWTP'},{id:'USMA-07',name:'South Essex (Salem)',county:'Essex',pop:95000,lat:42.5195,lng:-70.9001,wwtp:'South Essex Sewerage District'},{id:'USMA-08',name:'Brockton',county:'Plymouth',pop:107000,lat:42.0834,lng:-71.0184,wwtp:'Brockton Regional WPC'},{id:'USMA-09',name:'Pittsfield',county:'Berkshire',pop:44000,lat:42.4501,lng:-73.2479,wwtp:'Pittsfield WWTP'},{id:'USMA-10',name:'Holyoke',county:'Hampden',pop:40000,lat:42.2042,lng:-72.6162,wwtp:'Holyoke WWTP'},{id:'USMA-11',name:'Leominster',county:'Worcester',pop:63000,lat:42.5251,lng:-71.7598,wwtp:'Leominster WWTP'},{id:'USMA-12',name:'Fitchburg',county:'Worcester',pop:40000,lat:42.5834,lng:-71.8023,wwtp:'Fitchburg WWTP'},{id:'USMA-13',name:'Barnstable (Cape Cod)',county:'Barnstable',pop:48000,lat:41.7001,lng:-70.3001,wwtp:'Barnstable WWTP'},{id:'USMA-14',name:'Fall River',county:'Bristol',pop:94000,lat:41.7015,lng:-71.1550,wwtp:'Fall River WWTP'},{id:'USMA-15',name:'Quincy / South Shore',county:'Norfolk',pop:95000,lat:42.2529,lng:-71.0023,wwtp:'Quincy WWTP'},{id:'USMA-16',name:'Marlborough',county:'Middlesex',pop:38000,lat:42.3459,lng:-71.5523,wwtp:'Marlborough WWTP'},{id:'USMA-17',name:'Chicopee',county:'Hampden',pop:55000,lat:42.1487,lng:-72.6079,wwtp:'Chicopee WWTP'},{id:'USMA-18',name:'Taunton',county:'Bristol',pop:57000,lat:41.9001,lng:-71.0898,wwtp:'Taunton WWTP'}];
 const LVL={'Very High':{c:'#ef4444',cls:'lvl-vhi',rank:5},'High':{c:'#f97316',cls:'lvl-hi',rank:4},'Moderate':{c:'#f59e0b',cls:'lvl-mod',rank:3},'Low':{c:'#38bdf8',cls:'lvl-lo',rank:2},'Very Low':{c:'#a78bfa',cls:'lvl-vlo',rank:1},'No Data':{c:'#6b7a99',cls:'lvl-nd',rank:0},'Limited/No Data':{c:'#6b7a99',cls:'lvl-nd',rank:0}};
 const lvlColor=l=>LVL[l]?.c||'#6b7a99';
 const lvlCls=l=>LVL[l]?.cls||'lvl-nd';
@@ -259,294 +207,112 @@ const lvlRank=l=>LVL[l]?.rank??0;
 const PATHOGENS=['SARS-CoV-2','Influenza A','RSV'];
 const PATH_LABEL={'SARS-CoV-2':'COVID-19','Influenza A':'Flu A','RSV':'RSV'};
 const PATH_COLOR={'SARS-CoV-2':'#ef4444','Influenza A':'#f59e0b','RSV':'#38bdf8'};
-let activePathogen='SARS-CoV-2',siteData={},mbl,markers={};
+let activePathogen='SARS-CoV-2',siteData={},mbl,markers={},chartPathogen='SARS-CoV-2';
 const trendCache={};
-
 setInterval(()=>document.getElementById('clk').textContent=new Date().toLocaleTimeString('en-US',{hour12:false}),1000);
-
 function switchView(v){
-  ['map','ana','ctrend','ftrend','chart'].forEach(id=>{
+  const ids=['map','ana','ctrend','ftrend','chart'];
+  ids.forEach(function(id){
     const tab=document.getElementById('tab-'+id);
-    const view=document.getElementById('view-'+id);
+    const el=document.getElementById('view-'+id);
     if(tab) tab.classList.toggle('on',v===id);
-    if(view){
-      if(id==='map') view.classList.toggle('hidden',v!=='map');
-      else { view.classList.toggle('on',v===id); }
-    }
+    if(el){ if(id==='map') el.classList.toggle('hidden',v!==id); else el.classList.toggle('on',v===id); }
   });
-  if(v==='map'&&mbl) setTimeout(()=>mbl.resize(),50);
+  if(v==='map'&&mbl) setTimeout(function(){mbl.resize();},50);
   if(v==='ana') renderAnalytics();
   if(v==='ctrend') renderTrend('SARS-CoV-2','tbody-ctrend');
   if(v==='ftrend') renderTrend('Influenza A','tbody-ftrend');
+  if(v==='chart') renderChart();
 }
-
-function sPTab(t){document.querySelectorAll('.ptab').forEach((el,i)=>el.classList.toggle('on',['sites','legend'][i]===t));document.querySelectorAll('.psec').forEach(s=>s.classList.remove('on'));document.getElementById('sec-'+t).classList.add('on');}
+function sPTab(t){document.querySelectorAll('.ptab').forEach(function(el,i){el.classList.toggle('on',['sites','legend'][i]===t);});document.querySelectorAll('.psec').forEach(function(s){s.classList.remove('on');});document.getElementById('sec-'+t).classList.add('on');}
 function togglePathogen(p){activePathogen=p;document.getElementById('btn-covid').classList.toggle('on',p==='SARS-CoV-2');document.getElementById('btn-flu').classList.toggle('on',p==='Influenza A');document.getElementById('btn-rsv').classList.toggle('on',p==='RSV');updateMarkers();renderSiteList();}
-
-async function fetchNWSS(){
-  try{
-    const r=await fetch('https://data.cdc.gov/resource/2ew6-ywp6.json?wwtp_jurisdiction=Massachusetts&$limit=500&$order=date_end%20DESC&$select=key_plot_id,wwtp_name,county_names,population_served,date_end,percentile,detect_prop_15d,ptc_15d,wwtp_state_id,pathogen,pathogen_group,wastewater_viral_activity_level');
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    return await r.json();
-  }catch(e){console.warn('NWSS:',e.message);return null;}
-}
-
-function matchSite(n){if(!n)return null;const nl=n.toLowerCase();for(const s of MA_SITES){if(s.wwtp.toLowerCase().split(' ').filter(w=>w.length>3).some(p=>nl.includes(p)))return s.id;}return null;}
+async function fetchNWSS(){try{const r=await fetch('https://data.cdc.gov/resource/2ew6-ywp6.json?wwtp_jurisdiction=Massachusetts&$limit=500&$order=date_end%20DESC&$select=wwtp_name,date_end,percentile,ptc_15d,pathogen,wastewater_viral_activity_level,population_served');if(!r.ok)throw new Error();return await r.json();}catch(e){return null;}}
+function matchSite(n){if(!n)return null;const nl=n.toLowerCase();for(const s of MA_SITES){if(s.wwtp.toLowerCase().split(' ').filter(function(w){return w.length>3;}).some(function(p){return nl.includes(p);}))return s.id;}return null;}
 function synData(id,p){const s=id.charCodeAt(5)+p.charCodeAt(0);const l=['Very Low','Very Low','Low','Low','Moderate','Moderate','High','Very High'];return{level:l[s%l.length],ptc15d:(s*7%80)-40,percentile:(s*11%90)+5,date:'2025-03-21',synthetic:true};}
-
 async function loadData(){
   const rows=await fetchNWSS();
-  MA_SITES.forEach(s=>{siteData[s.id]={};PATHOGENS.forEach(p=>{siteData[s.id][p]=synData(s.id,p);});});
+  MA_SITES.forEach(function(s){siteData[s.id]={};PATHOGENS.forEach(function(p){siteData[s.id][p]=synData(s.id,p);});});
   if(rows&&rows.length){
     const bk={};
-    rows.forEach(r=>{const k=(r.wwtp_name||'')+'||'+(r.pathogen||'SARS-CoV-2');if(!bk[k]||r.date_end>bk[k].date_end)bk[k]=r;});
-    Object.values(bk).forEach(r=>{
-      const sid=matchSite(r.wwtp_name);if(!sid)return;
-      const p=r.pathogen||'SARS-CoV-2';if(!PATHOGENS.includes(p))return;
-      siteData[sid][p]={level:r.wastewater_viral_activity_level||'No Data',ptc15d:r.ptc_15d?parseFloat(r.ptc_15d):null,percentile:r.percentile?parseFloat(r.percentile):null,date:r.date_end?r.date_end.substring(0,10):'\u2014',synthetic:false};
-    });
-    const dates=Object.values(bk).map(r=>r.date_end).filter(Boolean).sort().reverse();
-    document.getElementById('ft-upd').textContent=dates[0]?.substring(0,10)||'\u2014';
+    rows.forEach(function(r){const k=(r.wwtp_name||'')+'|'+(r.pathogen||'SARS-CoV-2');if(!bk[k]||r.date_end>bk[k].date_end)bk[k]=r;});
+    Object.values(bk).forEach(function(r){const sid=matchSite(r.wwtp_name);if(!sid)return;const p=r.pathogen||'SARS-CoV-2';if(!PATHOGENS.includes(p))return;siteData[sid][p]={level:r.wastewater_viral_activity_level||'No Data',ptc15d:r.ptc_15d?parseFloat(r.ptc_15d):null,percentile:r.percentile?parseFloat(r.percentile):null,date:r.date_end?r.date_end.substring(0,10):'—',synthetic:false};});
+    const dates=Object.values(bk).map(function(r){return r.date_end;}).filter(Boolean).sort().reverse();
+    document.getElementById('ft-upd').textContent=dates[0]?dates[0].substring(0,10):'—';
     document.getElementById('ft-rep').textContent=Object.keys(bk).length;
-  }else{document.getElementById('ft-upd').textContent='Simulated';}
+  } else {document.getElementById('ft-upd').textContent='Simulated';}
   document.getElementById('ft-sites').textContent=MA_SITES.length;
   updateMarkers();renderSiteList();
 }
-
-// Ã¢ÂÂÃ¢ÂÂ TREND TABS Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 async function fetchTrendData(pathogen){
-  if(trendCache[pathogen]) return trendCache[pathogen];
-  try{
-    const enc=encodeURIComponent(pathogen);
-    const url='https://data.cdc.gov/resource/2ew6-ywp6.json?wwtp_jurisdiction=Massachusetts&$limit=2000&$order=date_end%20DESC&$where=pathogen=%27'+enc+'%27&$select=wwtp_name,date_end,percentile,ptc_15d,wastewater_viral_activity_level';
-    const res=await fetch(url);
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const rows=await res.json();
-    // Group by site name, keep latest 3
-    const bySite={};
-    rows.forEach(r=>{
-      const k=r.wwtp_name||'';
-      if(!bySite[k]) bySite[k]=[];
-      if(bySite[k].length<3) bySite[k].push(r);
-    });
-    trendCache[pathogen]=bySite;
-    return bySite;
-  }catch(e){console.warn('trend:',e);return null;}
+  if(trendCache[pathogen])return trendCache[pathogen];
+  try{const url='https://data.cdc.gov/resource/2ew6-ywp6.json?wwtp_jurisdiction=Massachusetts&$limit=2000&$order=date_end%20DESC&$where=pathogen=%27'+encodeURIComponent(pathogen)+'%27&$select=wwtp_name,date_end,percentile,ptc_15d,wastewater_viral_activity_level';const res=await fetch(url);if(!res.ok)throw new Error();const rows=await res.json();const bySite={};rows.forEach(function(r){const k=r.wwtp_name||'';if(!bySite[k])bySite[k]=[];if(bySite[k].length<3)bySite[k].push(r);});trendCache[pathogen]=bySite;return bySite;}catch(e){return null;}
 }
-
 async function renderTrend(pathogen,tbodyId){
   const tbody=document.getElementById(tbodyId);
-  tbody.innerHTML='<tr><td colspan="5" style="color:var(--mut);padding:20px;text-align:center">Fetching CDC data\u2026</td></tr>';
+  tbody.innerHTML='<tr><td colspan="5" style="color:var(--mut);padding:20px;text-align:center">Fetching CDC data…</td></tr>';
   const live=await fetchTrendData(pathogen);
-
-  const ranked=MA_SITES.map(s=>{
-    let avg=0,latestLvl='No Data',latestPtc=null,nWeeks=0;
-    if(live){
-      const key=Object.keys(live).find(k=>s.wwtp.toLowerCase().split(' ').filter(w=>w.length>3).some(p=>k.toLowerCase().includes(p)));
-      if(key&&live[key].length>0){
-        const rows=live[key];
-        const pcts=rows.map(r=>r.percentile?parseFloat(r.percentile):0).filter(v=>v>0);
-        avg=pcts.length?pcts.reduce((a,b)=>a+b,0)/pcts.length:0;
-        nWeeks=pcts.length;
-        latestLvl=rows[0].wastewater_viral_activity_level||'No Data';
-        latestPtc=rows[0].ptc_15d?parseFloat(rows[0].ptc_15d):null;
-      }
-    }
-    // Fall back to siteData
-    if(avg===0&&siteData[s.id]?.[pathogen]){
-      const sd=siteData[s.id][pathogen];
-      avg=sd.percentile||0;latestLvl=sd.level||'No Data';latestPtc=sd.ptc15d;nWeeks=0;
-    }
-    return{s,avg,latestLvl,latestPtc,nWeeks};
-  }).sort((a,b)=>b.avg-a.avg);
-
-  const maxAvg=Math.max(...ranked.map(r=>r.avg),1);
-
-  tbody.innerHTML=ranked.map(({s,avg,latestLvl,latestPtc,nWeeks},i)=>{
-    const col=lvlColor(latestLvl);
-    const cls=lvlCls(latestLvl);
-    const barW=Math.round((avg/maxAvg)*100);
-    const avgStr=avg>0?(Math.round(avg)+'th'):'\u2014';
-    const wkStr=nWeeks>0?' ('+nWeeks+'w)':' ~';
-    const ptcStr=latestPtc!=null?(latestPtc>0?'+':'')+Math.round(latestPtc)+'%':'\u2014';
-    const ptcCol=latestPtc>10?'var(--bad)':latestPtc<-10?'var(--ok)':'var(--mut)';
-    const lvlShort=latestLvl.replace('Limited/','').replace(' Data','').replace('Very ','V.');
-    return '<tr>'
-      +'<td class="rank-num">'+(i+1)+'</td>'
-      +'<td><div class="site-cell-name">'+s.name+'</div><div class="site-cell-sub">'+s.county+' Co. \u00b7 '+(s.pop/1000).toFixed(0)+'K served</div></td>'
-      +'<td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:'+barW+'%;background:'+col+'"></div></div>'
-      +'<span class="bar-val" style="color:'+col+'">'+avgStr+wkStr+'</span></div></td>'
-      +'<td><span class="lvl-pill '+cls+'">'+lvlShort+'</span></td>'
-      +'<td class="delta-cell" style="color:'+ptcCol+'">'+ptcStr+'</td>'
-      +'</tr>';
+  const ranked=MA_SITES.map(function(s){
+    let avg=0,lvl='No Data',ptc=null,nw=0;
+    if(live){const key=Object.keys(live).find(function(k){return s.wwtp.toLowerCase().split(' ').filter(function(w){return w.length>3;}).some(function(p){return k.toLowerCase().includes(p);});});if(key&&live[key].length>0){const rows=live[key];const pcts=rows.map(function(r){return r.percentile?parseFloat(r.percentile):0;}).filter(function(v){return v>0;});avg=pcts.length?pcts.reduce(function(a,b){return a+b;})/pcts.length:0;nw=pcts.length;lvl=rows[0].wastewater_viral_activity_level||'No Data';ptc=rows[0].ptc_15d?parseFloat(rows[0].ptc_15d):null;}}
+    if(avg===0&&siteData[s.id]&&siteData[s.id][pathogen]){const sd=siteData[s.id][pathogen];avg=sd.percentile||0;lvl=sd.level||'No Data';ptc=sd.ptc15d;nw=0;}
+    return{s:s,avg:avg,lvl:lvl,ptc:ptc,nw:nw};
+  }).sort(function(a,b){return b.avg-a.avg;});
+  const mx=Math.max.apply(null,ranked.map(function(r){return r.avg;}).concat([1]));
+  tbody.innerHTML=ranked.map(function(item,i){
+    const s=item.s,avg=item.avg,lvl=item.lvl,ptc=item.ptc,nw=item.nw;
+    const col=lvlColor(lvl),cls=lvlCls(lvl);
+    const bw=Math.round((avg/mx)*100);
+    const ptcStr=ptc!=null?(ptc>0?'+':'')+Math.round(ptc)+'%':'—';
+    const ptcCol=ptc>10?'var(--bad)':ptc<-10?'var(--ok)':'var(--mut)';
+    const ls=lvl.replace('Limited/','').replace(' Data','').replace('Very ','V.');
+    return '<tr><td class="rank-num">'+(i+1)+'</td><td><div class="site-cell-name">'+s.name+'</div><div class="site-cell-sub">'+s.county+' Co. · '+(s.pop/1000).toFixed(0)+'K</div></td><td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:'+bw+'%;background:'+col+'"></div></div><span class="bar-val" style="color:'+col+'">'+(avg>0?Math.round(avg)+'th':'—')+(nw>0?' ('+nw+'w)':' ~')+'</span></div></td><td><span class="lvl-pill '+cls+'">'+ls+'</span></td><td class="delta-cell" style="color:'+ptcCol+'">'+ptcStr+'</td></tr>';
   }).join('');
 }
-
-// Ã¢ÂÂÃ¢ÂÂ MAP Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
-window.addEventListener('load', async function(){
+function setChartP(p){
+  chartPathogen=p;
+  const map={'covid':'SARS-CoV-2','flu':'Influenza A','rsv':'RSV'};
+  const cols={'SARS-CoV-2':'#ef4444','Influenza A':'#f59e0b','RSV':'#38bdf8'};
+  Object.keys(map).forEach(function(k){const btn=document.getElementById('cpBtn-'+k);if(!btn)return;const on=p===map[k];btn.classList.toggle('on',on);btn.style.background=on?cols[map[k]]:'';btn.style.color=on?'#fff':'';});
+  renderChart();
+}
+function renderChart(){
+  const grid=document.getElementById('cgrid');if(!grid)return;
+  const sort=document.getElementById('chart-sort')?document.getElementById('chart-sort').value:'signal';
+  let sites=MA_SITES.map(function(s){const info=(siteData[s.id]&&siteData[s.id][chartPathogen])||{};return{s:s,pct:info.percentile||0,lvl:info.level||'No Data',ptc:info.ptc15d!=null?info.ptc15d:null,syn:info.synthetic!==false};});
+  if(sort==='signal') sites.sort(function(a,b){return b.pct-a.pct;});
+  else if(sort==='name') sites.sort(function(a,b){return a.s.name.localeCompare(b.s.name);});
+  else if(sort==='pop') sites.sort(function(a,b){return b.s.pop-a.s.pop;});
+  else sites.sort(function(a,b){return (b.ptc!=null?b.ptc:-999)-(a.ptc!=null?a.ptc:-999);});
+  const mx=Math.max.apply(null,sites.map(function(s){return s.pct;}).concat([1]));
+  const leg=document.getElementById('chart-legend');
+  if(leg)leg.innerHTML=[['Very High','#ef4444'],['High','#f97316'],['Moderate','#f59e0b'],['Low','#38bdf8'],['Very Low','#a78bfa'],['No Data','#6b7a99']].map(function(x){return '<div class="cleg-item"><div class="cleg-bar" style="background:'+x[1]+'"></div>'+x[0]+'</div>';}).join('');
+  let rows='<div class="crow hdr-row"><div class="c-town">COLLECTION SITE</div><div class="c-bar">SIGNAL STRENGTH (PERCENTILE RANK)</div><div class="c-stats"><div>RANK</div><div>PCT</div><div>LEVEL</div><div>15-DAY</div></div></div>';
+  sites.forEach(function(item,i){
+    const s=item.s,pct=item.pct,lvl=item.lvl,ptc=item.ptc,syn=item.syn;
+    const bc=lvlColor(lvl),cls=lvlCls(lvl);
+    const bw=pct>0?Math.round((pct/mx)*100):0;
+    const pctStr=pct>0?Math.round(pct)+'th':'—';
+    const ptcStr=ptc!=null?(ptc>0?'+':'')+Math.round(ptc)+'%':'—';
+    const ptcCol=ptc>10?'var(--bad)':ptc<-10?'var(--ok)':'#8fa0c0';
+    const pop=s.pop>=1e6?(s.pop/1e6).toFixed(1)+'M':(s.pop/1000).toFixed(0)+'K';
+    const ls=lvl.replace('Limited/','').replace(' Data','').replace('Very ','V.');
+    const synMark=syn?' <span style="color:#6b8cba;font-size:9px">~</span>':'';
+    rows+='<div class="crow"><div class="c-town"><div><div class="c-town-name">'+s.name+synMark+'</div><div class="c-town-sub">'+s.county+' · '+pop+'</div></div></div><div class="c-bar"><div class="c-bar-outer"><div class="c-bar-fill" style="width:'+bw+'%;background:linear-gradient(90deg,'+bc+'55,'+bc+'cc);">'+(bw>14?'<span class="c-bar-label">'+pctStr+'</span>':'')+'</div>'+(bw<=14&&pct>0?'<span style="position:absolute;left:'+(bw+1)+'%;top:50%;transform:translateY(-50%);font-size:10px;font-weight:700;color:'+bc+'">'+pctStr+'</span>':'')+'</div></div><div class="c-stats"><div><div class="stat-v" style="color:#6b8cba">'+(i+1)+'</div></div><div><div class="stat-v" style="color:'+bc+'">'+pctStr+'</div><div class="stat-l">PCTL</div></div><div><span class="lvl-pill '+cls+'" style="font-size:10px;padding:3px 8px;">'+ls+'</span></div><div><div class="stat-v" style="color:'+ptcCol+'">'+ptcStr+'</div><div class="stat-l">15-DAY</div></div></div></div>';
+  });
+  grid.innerHTML=rows;
+}
+window.addEventListener('load',function(){
   mbl=new maplibregl.Map({container:'map',style:'https://tiles.openfreemap.org/styles/liberty',center:[-71.8,42.3],zoom:7.2,attributionControl:false});
   mbl.addControl(new maplibregl.NavigationControl(),'top-right');
   mbl.addControl(new maplibregl.AttributionControl({compact:true}),'bottom-right');
-  mbl.on('load',async()=>{
-    mbl.setGlyphs('https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf');
-    await loadData();
-  });
+  mbl.on('load',function(){mbl.setGlyphs('https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf');loadData();});
 });
-
-function updateMarkers(){Object.values(markers).forEach(m=>m.remove());markers={};MA_SITES.forEach(s=>{const info=siteData[s.id]?.[activePathogen]||{};const lvl=info.level||'No Data';const col=lvlColor(lvl);const rank=lvlRank(lvl);const size=12+rank*4;const ns='http://www.w3.org/2000/svg';const svg=document.createElementNS(ns,'svg');svg.setAttribute('width',size+8);svg.setAttribute('height',size+8);svg.setAttribute('viewBox','0 0 '+(size+8)+' '+(size+8));svg.style.cssText='filter:drop-shadow(0 2px 6px rgba(0,0,0,.7));display:block;cursor:pointer;';const c=document.createElementNS(ns,'circle');c.setAttribute('cx',(size+8)/2);c.setAttribute('cy',(size+8)/2);c.setAttribute('r',size/2);c.setAttribute('fill',col);c.setAttribute('stroke','white');c.setAttribute('stroke-width','2');svg.appendChild(c);if(rank>=4){const rg=document.createElementNS(ns,'circle');rg.setAttribute('cx',(size+8)/2);rg.setAttribute('cy',(size+8)/2);rg.setAttribute('r',size/2+1);rg.setAttribute('fill','none');rg.setAttribute('stroke',col);rg.setAttribute('stroke-width','1.5');rg.setAttribute('opacity','0.5');svg.appendChild(rg);}const mk=new maplibregl.Marker({element:svg,anchor:'center'}).setLngLat([s.lng,s.lat]).addTo(mbl);svg.addEventListener('mouseenter',e=>showHpop(s,e));svg.addEventListener('mousemove',e=>moveHpop(e));svg.addEventListener('mouseleave',()=>document.getElementById('hpop').style.display='none');svg.addEventListener('click',e=>{e.stopPropagation();showPopup(s);});markers[s.id]=mk;});}
-
-function showHpop(s,e){const hp=document.getElementById('hpop');hp.style.display='block';const d=siteData[s.id]||{};hp.innerHTML='<div class="hpop-name">'+s.name+'</div><div class="hpop-sub">'+s.county+' Co. \u00b7 '+(s.pop/1000).toFixed(0)+'K served</div>'+PATHOGENS.map(p=>{const info=d[p]||{};const lvl=info.level||'No Data';const ptc=info.ptc15d!=null?(info.ptc15d>0?'+':'')+Math.round(info.ptc15d)+'%':'\u2014';return '<div class="hpop-row"><span class="hpop-lbl">'+PATH_LABEL[p]+'</span><span class="hpop-val" style="color:'+lvlColor(lvl)+'">'+lvl+'</span><span class="hpop-val" style="color:var(--mut);font-size:9px">'+ptc+'</span></div>';}).join('');moveHpop(e);}
+function updateMarkers(){Object.values(markers).forEach(function(m){m.remove();});markers={};MA_SITES.forEach(function(s){const info=(siteData[s.id]&&siteData[s.id][activePathogen])||{};const lvl=info.level||'No Data';const col=lvlColor(lvl);const rank=lvlRank(lvl);const size=12+rank*4;const ns='http://www.w3.org/2000/svg';const svg=document.createElementNS(ns,'svg');svg.setAttribute('width',size+8);svg.setAttribute('height',size+8);svg.setAttribute('viewBox','0 0 '+(size+8)+' '+(size+8));svg.style.cssText='filter:drop-shadow(0 2px 6px rgba(0,0,0,.7));display:block;cursor:pointer;';const c=document.createElementNS(ns,'circle');c.setAttribute('cx',(size+8)/2);c.setAttribute('cy',(size+8)/2);c.setAttribute('r',size/2);c.setAttribute('fill',col);c.setAttribute('stroke','white');c.setAttribute('stroke-width','2');svg.appendChild(c);if(rank>=4){const rg=document.createElementNS(ns,'circle');rg.setAttribute('cx',(size+8)/2);rg.setAttribute('cy',(size+8)/2);rg.setAttribute('r',size/2+1);rg.setAttribute('fill','none');rg.setAttribute('stroke',col);rg.setAttribute('stroke-width','1.5');rg.setAttribute('opacity','0.5');svg.appendChild(rg);}const mk=new maplibregl.Marker({element:svg,anchor:'center'}).setLngLat([s.lng,s.lat]).addTo(mbl);svg.addEventListener('mouseenter',function(e){showHpop(s,e);});svg.addEventListener('mousemove',function(e){moveHpop(e);});svg.addEventListener('mouseleave',function(){document.getElementById('hpop').style.display='none';});svg.addEventListener('click',function(e){e.stopPropagation();showPopup(s);});markers[s.id]=mk;});}
+function showHpop(s,e){const hp=document.getElementById('hpop');hp.style.display='block';const d=siteData[s.id]||{};hp.innerHTML='<div class="hpop-name">'+s.name+'</div><div class="hpop-sub">'+s.county+' · '+(s.pop/1000).toFixed(0)+'K served</div>'+PATHOGENS.map(function(p){const info=d[p]||{};const lvl=info.level||'No Data';const ptc=info.ptc15d!=null?(info.ptc15d>0?'+':'')+Math.round(info.ptc15d)+'%':'—';return '<div class="hpop-row"><span class="hpop-lbl">'+PATH_LABEL[p]+'</span><span class="hpop-val" style="color:'+lvlColor(lvl)+'">'+lvl+'</span><span class="hpop-val" style="color:var(--mut);font-size:9px">'+ptc+'</span></div>';}).join('');moveHpop(e);}
 function moveHpop(e){const hp=document.getElementById('hpop');const rect=document.getElementById('mwrap').getBoundingClientRect();let x=e.clientX-rect.left+14,y=e.clientY-rect.top-10;if(x+280>rect.width)x=e.clientX-rect.left-290;hp.style.left=x+'px';hp.style.top=y+'px';}
-function showPopup(s){const d=siteData[s.id]||{};const rows=PATHOGENS.map(p=>{const info=d[p]||{};const lvl=info.level||'No Data';const ptc=info.ptc15d!=null?(info.ptc15d>0?'+':'')+Math.round(info.ptc15d)+'%':'\u2014';return '<div class="ppop-row"><span class="ppop-lbl">'+PATH_LABEL[p]+'</span><span class="ppop-val" style="color:'+lvlColor(lvl)+'">'+lvl+'</span><span class="ppop-lbl">'+ptc+'</span></div>';}).join('');const syn=Object.values(d).some(v=>v.synthetic);new maplibregl.Popup({maxWidth:'260px',closeButton:true}).setLngLat([s.lng,s.lat]).setHTML('<div><div class="ppop-title">'+s.name+'</div><div style="font-size:10px;color:#6b7a99;margin-bottom:8px">'+s.county+' County \u00b7 '+(s.pop>=1e6?(s.pop/1e6).toFixed(1)+'M':(s.pop/1000).toFixed(0)+'K')+' served \u00b7 '+(d[activePathogen]?.date||'\u2014')+'</div><div style="font-size:9px;font-weight:700;color:#4f9cff;margin-bottom:5px">PATHOGEN LEVELS</div>'+rows+(syn?'<div style="font-size:9px;color:#6b7a99;margin-top:6px;padding-top:6px;border-top:1px solid #1e2d47">\u26a0 Illustrative levels shown</div>':'')+'</div>').addTo(mbl);}
-
-function renderSiteList(){const el=document.getElementById('site-list');const sorted=[...MA_SITES].sort((a,b)=>lvlRank(siteData[b.id]?.[activePathogen]?.level||'No Data')-lvlRank(siteData[a.id]?.[activePathogen]?.level||'No Data'));el.innerHTML=sorted.map(s=>{const info=siteData[s.id]?.[activePathogen]||{};const lvl=info.level||'No Data';const col=lvlColor(lvl);const cls=lvlCls(lvl);const ptc=info.ptc15d!=null?'<span style="color:'+(info.ptc15d>=0?'var(--ok)':'var(--bad)')+'">'+( info.ptc15d>=0?'+':'')+Math.round(info.ptc15d)+'%</span>':'';return '<div class="srow" onclick="mbl&&mbl.flyTo({center:['+s.lng+','+s.lat+'],zoom:11,duration:700});showPopup(MA_SITES.find(x=>x.id===\''+s.id+'\'))"><div class="sdot" style="background:'+col+'"></div><div class="sname">'+s.name+'<br><span class="spop">'+(s.pop/1000).toFixed(0)+'K served</span></div>'+ptc+'<div class="slvl '+cls+'">'+lvl.replace('Limited/','').replace(' Data','').replace('Very ','V.')+'</div></div>';}).join('');}
-
-function renderAnalytics(){const sortBy=document.getElementById('ana-sort')?.value||'level';const fp=document.getElementById('ana-filter')?.value||'all';const ps=fp==='all'?PATHOGENS:[fp];let sites=[...MA_SITES];if(sortBy==='level')sites.sort((a,b)=>Math.max(...ps.map(p=>lvlRank(siteData[b.id]?.[p]?.level||'No Data')))-Math.max(...ps.map(p=>lvlRank(siteData[a.id]?.[p]?.level||'No Data'))));else if(sortBy==='name')sites.sort((a,b)=>a.name.localeCompare(b.name));else sites.sort((a,b)=>b.pop-a.pop);document.getElementById('cards-grid').innerHTML=sites.map(s=>buildCard(s,ps)).join('');}
-function buildCard(s,ps){const d=siteData[s.id]||{};const pf=s.pop>=1e6?(s.pop/1e6).toFixed(1)+'M':(s.pop/1000).toFixed(0)+'K';const segs=ps.map(p=>{const r=lvlRank((d[p]||{}).level||'No Data');return '<div class="spec-seg" style="flex:'+Math.max(10,r*20)+';background:'+PATH_COLOR[p]+';opacity:'+(0.3+r*0.14)+';"></div>';}).join('');const pills=ps.map(p=>{const info=d[p]||{};const lvl=info.level||'No Data';const col=lvlColor(lvl);const ptc=info.ptc15d;const tr=ptc==null?'':ptc>10?'\u2191':ptc<-10?'\u2193':'\u2192';const tc=ptc>10?'var(--bad)':ptc<-10?'var(--ok)':'var(--mut)';return '<div class="agent-pill"><div><div style="font-size:9px;font-weight:700;color:'+PATH_COLOR[p]+'">'+PATH_LABEL[p]+'</div><div class="agent-name">'+(info.synthetic?'~':'')+lvl+'</div></div><div style="text-align:right"><div class="agent-val" style="color:'+col+'">'+(info.percentile!=null?Math.round(info.percentile)+'th':'\u2014')+'</div><div style="font-size:9px;color:'+tc+'">'+tr+(ptc!=null?(ptc>0?'+':'')+Math.round(ptc)+'%':'')+'</div></div></div>';}).join('');const mx=ps.reduce((m,p)=>{const r=lvlRank((d[p]||{}).level||'No Data');return r>lvlRank(m)?(d[p]?.level||'No Data'):m;},'No Data');return '<div class="site-card" style="border-left:3px solid '+lvlColor(mx)+'"><div class="card-hdr"><div class="card-dot" style="background:'+lvlColor(mx)+'"></div><div class="card-name">'+s.name+'</div><div class="card-pop">'+s.county+' \u00b7 '+pf+'</div></div><div class="card-body"><div class="spectrum-wrap"><div class="spectrum-label">SIGNAL SPECTRUM</div><div class="spectrum-bar">'+segs+'</div></div><div class="agent-grid">'+pills+'</div></div></div>';}
-
-
-// ── CHART VIEW ────────────────────────────────────────────────────────────────
-let chartPathogen = 'SARS-CoV-2';
-const CHART_COLORS = {'SARS-CoV-2':'#ef4444','Influenza A':'#f59e0b','RSV':'#38bdf8'};
-
-function setChartPathogen(p) {
-  chartPathogen = p;
-  ['covid','flu','rsv'].forEach(k => {
-    const btn = document.getElementById('cpBtn-'+k);
-    const col = k==='covid'?'#ef4444':k==='flu'?'#f59e0b':'#38bdf8';
-    const pathKey = k==='covid'?'SARS-CoV-2':k==='flu'?'Influenza A':'RSV';
-    if(btn) {
-      btn.classList.toggle('on', p===pathKey);
-      btn.style.background = p===pathKey ? col : '';
-      btn.style.color = p===pathKey ? '#fff' : '';
-    }
-  });
-  renderChart();
-}
-
-async function renderChart() {
-  const grid = document.getElementById('chart-grid');
-  if(!grid) return;
-
-  const sortBy = document.getElementById('chart-sort-sel')?.value || 'signal';
-  const col = CHART_COLORS[chartPathogen] || '#4f9cff';
-
-  // Build site list with data
-  let sites = MA_SITES.map(s => {
-    const info = siteData[s.id]?.[chartPathogen] || {};
-    return {
-      s,
-      pct: info.percentile ?? 0,
-      lvl: info.level || 'No Data',
-      ptc: info.ptc15d ?? null,
-      synthetic: info.synthetic ?? true
-    };
-  });
-
-  // Sort
-  if(sortBy === 'signal') sites.sort((a,b) => b.pct - a.pct);
-  else if(sortBy === 'name') sites.sort((a,b) => a.s.name.localeCompare(b.s.name));
-  else if(sortBy === 'pop') sites.sort((a,b) => b.s.pop - a.s.pop);
-  else if(sortBy === 'delta') sites.sort((a,b) => (b.ptc??-999) - (a.ptc??-999));
-
-  const maxPct = Math.max(...sites.map(s=>s.pct), 1);
-
-  // Legend
-  const legend = document.getElementById('chart-legend');
-  if(legend) {
-    legend.innerHTML = [
-      ['Very High','#ef4444'],['High','#f97316'],['Moderate','#f59e0b'],
-      ['Low','#38bdf8'],['Very Low','#a78bfa'],['No Data','#6b7a99']
-    ].map(([l,c]) => `<div class="chart-legend-item"><div class="chart-legend-bar" style="background:${c}"></div>${l}</div>`).join('');
-  }
-
-  // Build grid rows
-  let rows = '';
-
-  // Header row
-  rows += `<div class="chart-header-row">
-    <div class="town-label">COLLECTION SITE</div>
-    <div class="chart-bar-cell">SIGNAL STRENGTH (PERCENTILE RANK)</div>
-    <div class="stats-cell" style="gap:8px;">
-      <div style="min-width:32px;text-align:center">RANK</div>
-      <div style="min-width:52px;text-align:center">PCT</div>
-      <div style="min-width:52px;text-align:center">LEVEL</div>
-      <div style="min-width:52px;text-align:center">15-DAY</div>
-    </div>
-  </div>`;
-
-  sites.forEach(({s, pct, lvl, ptc, synthetic}, i) => {
-    const barW = pct > 0 ? Math.round((pct/maxPct)*100) : 0;
-    const barCol = lvlColor(lvl);
-    const ptcStr = ptc!=null ? (ptc>0?'+':'')+Math.round(ptc)+'%' : '—';
-    const ptcCol = ptc>10?'var(--bad)':ptc<-10?'var(--ok)':'#8fa0c0';
-    const pctStr = pct > 0 ? Math.round(pct)+'th' : '—';
-    const lvlShort = lvl.replace('Limited/','').replace(' Data','').replace('Very ','V.');
-    const popStr = s.pop>=1e6?(s.pop/1e6).toFixed(1)+'M':(s.pop/1000).toFixed(0)+'K';
-    const synMark = synthetic ? ' <span style="color:#6b8cba;font-size:9px;font-weight:400">~</span>' : '';
-
-    rows += `<div class="chart-row">
-      <div class="town-label">
-        <div>
-          <div class="town-name">${s.name}${synMark}</div>
-          <div class="town-pop">${s.county} · ${popStr}</div>
-        </div>
-      </div>
-      <div class="chart-bar-cell">
-        <div class="chart-bar-outer">
-          <div class="chart-bar-inner" style="width:${barW}%;background:${barCol}20;border-right:${barW>0?'3px solid '+barCol:'none'}">
-            <div style="position:absolute;left:0;top:0;height:100%;width:${barW}%;background:linear-gradient(90deg,${barCol}40,${barCol}90);border-radius:4px;"></div>
-            ${barW>12?'<span class="chart-bar-pct-label" style="position:relative;z-index:1;">'+pctStr+'</span>':''}
-          </div>
-          ${barW<=12&&pct>0?'<span style="position:absolute;left:'+(barW+1)+'%;top:50%;transform:translateY(-50%);font-size:10px;font-weight:700;color:'+barCol+'">'+pctStr+'</span>':''}
-        </div>
-      </div>
-      <div class="stats-cell">
-        <div class="stat-rank">${i+1}</div>
-        <div class="stat-block">
-          <div class="stat-val" style="color:${barCol}">${pctStr}</div>
-          <div class="stat-lbl">PERCENTILE</div>
-        </div>
-        <div class="stat-block">
-          <span class="lvl-pill ${lvlCls(lvl)}" style="font-size:10px;padding:3px 7px;">${lvlShort}</span>
-        </div>
-        <div class="stat-block">
-          <div class="stat-val" style="color:${ptcCol}">${ptcStr}</div>
-          <div class="stat-lbl">15-DAY</div>
-        </div>
-      </div>
-    </div>`;
-  });
-
-  grid.innerHTML = rows;
-}
-
+function showPopup(s){const d=siteData[s.id]||{};const rows=PATHOGENS.map(function(p){const info=d[p]||{};const lvl=info.level||'No Data';const ptc=info.ptc15d!=null?(info.ptc15d>0?'+':'')+Math.round(info.ptc15d)+'%':'—';return '<div class="ppop-row"><span class="ppop-lbl">'+PATH_LABEL[p]+'</span><span class="ppop-val" style="color:'+lvlColor(lvl)+'">'+lvl+'</span><span class="ppop-lbl">'+ptc+'</span></div>';}).join('');const syn=Object.values(d).some(function(v){return v.synthetic;});new maplibregl.Popup({maxWidth:'260px',closeButton:true}).setLngLat([s.lng,s.lat]).setHTML('<div><div class="ppop-title">'+s.name+'</div><div style="font-size:10px;color:#6b7a99;margin-bottom:8px">'+s.county+' · '+(s.pop>=1e6?(s.pop/1e6).toFixed(1)+'M':(s.pop/1000).toFixed(0)+'K')+' served · '+((d[activePathogen]&&d[activePathogen].date)||'—')+'</div><div style="font-size:9px;font-weight:700;color:#4f9cff;margin-bottom:5px">PATHOGEN LEVELS</div>'+rows+(syn?'<div style="font-size:9px;color:#6b7a99;margin-top:6px;padding-top:6px;border-top:1px solid #1e2d47">⚠ Illustrative levels shown</div>':'')+'</div>').addTo(mbl);}
+function renderSiteList(){const el=document.getElementById('site-list');const sorted=[].concat(MA_SITES).sort(function(a,b){return lvlRank((siteData[b.id]&&siteData[b.id][activePathogen]&&siteData[b.id][activePathogen].level)||'No Data')-lvlRank((siteData[a.id]&&siteData[a.id][activePathogen]&&siteData[a.id][activePathogen].level)||'No Data');});el.innerHTML=sorted.map(function(s){const info=(siteData[s.id]&&siteData[s.id][activePathogen])||{};const lvl=info.level||'No Data';const col=lvlColor(lvl);const cls=lvlCls(lvl);const ptc=info.ptc15d!=null?'<span style="color:'+(info.ptc15d>=0?'var(--ok)':'var(--bad)')+'">'+( info.ptc15d>=0?'+':'')+Math.round(info.ptc15d)+'%</span>':'';return '<div class="srow" onclick="mbl&&mbl.flyTo({center:['+s.lng+','+s.lat+'],zoom:11,duration:700});showPopup(MA_SITES.find(function(x){return x.id===''+s.id+'';}))"><div class="sdot" style="background:'+col+'"></div><div class="sname">'+s.name+'<br><span class="spop">'+(s.pop/1000).toFixed(0)+'K served</span></div>'+ptc+'<div class="slvl '+cls+'">'+lvl.replace('Limited/','').replace(' Data','').replace('Very ','V.')+'</div></div>';}).join('');}
+function renderAnalytics(){const sortBy=(document.getElementById('ana-sort')||{}).value||'level';const fp=(document.getElementById('ana-filter')||{}).value||'all';const ps=fp==='all'?PATHOGENS:[fp];let sites=[].concat(MA_SITES);if(sortBy==='level')sites.sort(function(a,b){return Math.max.apply(null,ps.map(function(p){return lvlRank((siteData[b.id]&&siteData[b.id][p]&&siteData[b.id][p].level)||'No Data');})) - Math.max.apply(null,ps.map(function(p){return lvlRank((siteData[a.id]&&siteData[a.id][p]&&siteData[a.id][p].level)||'No Data');}));});else if(sortBy==='name')sites.sort(function(a,b){return a.name.localeCompare(b.name);});else sites.sort(function(a,b){return b.pop-a.pop;});document.getElementById('cards-grid').innerHTML=sites.map(function(s){return buildCard(s,ps);}).join('');}
+function buildCard(s,ps){const d=siteData[s.id]||{};const pf=s.pop>=1e6?(s.pop/1e6).toFixed(1)+'M':(s.pop/1000).toFixed(0)+'K';const segs=ps.map(function(p){const r=lvlRank(((d[p]||{}).level)||'No Data');return '<div class="spec-seg" style="flex:'+Math.max(10,r*20)+';background:'+PATH_COLOR[p]+';opacity:'+(0.3+r*0.14)+';"></div>';}).join('');const pills=ps.map(function(p){const info=d[p]||{};const lvl=info.level||'No Data';const col=lvlColor(lvl);const ptc=info.ptc15d;const tr=ptc==null?'':ptc>10?'↑':ptc<-10?'↓':'→';const tc=ptc>10?'var(--bad)':ptc<-10?'var(--ok)':'var(--mut)';return '<div class="agent-pill"><div><div style="font-size:9px;font-weight:700;color:'+PATH_COLOR[p]+'">'+PATH_LABEL[p]+'</div><div class="agent-name">'+(info.synthetic?'~':'')+lvl+'</div></div><div style="text-align:right"><div class="agent-val" style="color:'+col+'">'+(info.percentile!=null?Math.round(info.percentile)+'th':'—')+'</div><div style="font-size:9px;color:'+tc+'">'+tr+(ptc!=null?(ptc>0?'+':'')+Math.round(ptc)+'%':'')+'</div></div></div>';}).join('');const mx=ps.reduce(function(m,p){const r=lvlRank(((d[p]||{}).level)||'No Data');return r>lvlRank(m)?(d[p]&&d[p].level||'No Data'):m;},'No Data');return '<div class="site-card" style="border-left:3px solid '+lvlColor(mx)+'"><div class="card-hdr"><div class="card-dot" style="background:'+lvlColor(mx)+'"></div><div class="card-name">'+s.name+'</div><div class="card-pop">'+s.county+' · '+pf+'</div></div><div class="card-body"><div class="spectrum-wrap"><div class="spectrum-label">SIGNAL SPECTRUM</div><div class="spectrum-bar">'+segs+'</div></div><div class="agent-grid">'+pills+'</div></div></div>';}
 </script>
-
-<!-- CHART VIEW -->
-<div class="chart-view" id="view-chart">
-  <div class="chart-header">
-    <div>
-      <div class="chart-title">Wastewater Signal — All Sites</div>
-      <div class="chart-sub">Horizontal bar chart · towns stacked vertically · percentile rank signal strength</div>
-    </div>
-    <div class="chart-controls">
-      <button class="chart-pathogen-btn on" id="cpBtn-covid" onclick="setChartPathogen('SARS-CoV-2')" style="background:#ef4444">COVID-19</button>
-      <button class="chart-pathogen-btn" id="cpBtn-flu" onclick="setChartPathogen('Influenza A')" style="">FLU A</button>
-      <button class="chart-pathogen-btn" id="cpBtn-rsv" onclick="setChartPathogen('RSV')" style="">RSV</button>
-      <select class="chart-sort-sel" id="chart-sort-sel" onchange="renderChart()">
-        <option value="signal">Sort: Signal (high→low)</option>
-        <option value="name">Sort: Name (A→Z)</option>
-        <option value="pop">Sort: Population</option>
-        <option value="delta">Sort: 15-day change</option>
-      </select>
-    </div>
-  </div>
-  <div class="chart-legend" id="chart-legend"></div>
-  <div class="chart-grid" id="chart-grid">
-    <div style="color:var(--mut);font-size:12px;padding:20px;grid-column:1/-1;text-align:center">Loading…</div>
-  </div>
-</div>
-
-</body>
-</html>
+</body></html>
