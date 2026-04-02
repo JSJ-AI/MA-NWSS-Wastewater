@@ -3,106 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>MA NWSS Ã¢ÂÂ Wastewater Surveillance</title>
+<title>MA NWSS — Wastewater Surveillance</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
-<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js">
-// ── TREND TABS ───────────────────────────────────────────────────────────────
-// Fetch last 3 readings per site per pathogen from CDC NWSS for rolling avg
-const trendCache = {};
-
-async function fetchTrendData(pathogen) {
-  if(trendCache[pathogen]) return trendCache[pathogen];
-  try {
-    const url = 'https://data.cdc.gov/resource/2ew6-ywp6.json' +
-      '?wwtp_jurisdiction=Massachusetts' +
-      '&$limit=1000' +
-      '&$order=date_end%20DESC' +
-      '&$where=pathogen=%27' + encodeURIComponent(pathogen) + '%27' +
-      '&$select=wwtp_name,date_end,percentile,ptc_15d,wastewater_viral_activity_level';
-    const res = await fetch(url);
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const rows = await res.json();
-    // Group by site, keep last 3 sorted by date desc
-    const bySite = {};
-    rows.forEach(r => {
-      const k = r.wwtp_name||'';
-      if(!bySite[k]) bySite[k] = [];
-      if(bySite[k].length < 3) bySite[k].push(r);
-    });
-    trendCache[pathogen] = bySite;
-    return bySite;
-  } catch(e) { console.warn('trend fetch:',e); return null; }
-}
-
-async function renderTrend(pathogen, bodyId) {
-  const tbody = document.getElementById(bodyId);
-  tbody.innerHTML = '<tr><td colspan="5" style="color:var(--mut);padding:20px;text-align:center">Loading CDC data…</td></tr>';
-  
-  // Try live data first, fall back to siteData
-  const liveData = await fetchTrendData(pathogen);
-  
-  // Build ranked list from MA_SITES
-  const ranked = MA_SITES.map(s => {
-    let avg = 0, latestLvl = 'No Data', latestPtc = null, dataPoints = 0;
-    
-    if(liveData) {
-      // Find matching site in live data by fuzzy name match
-      const key = Object.keys(liveData).find(k =>
-        s.wwtp.toLowerCase().split(' ').filter(w=>w.length>3).some(p=>k.toLowerCase().includes(p))
-      );
-      if(key && liveData[key].length > 0) {
-        const rows = liveData[key];
-        const percentiles = rows.map(r => r.percentile ? parseFloat(r.percentile) : 0).filter(v=>v>0);
-        avg = percentiles.length ? percentiles.reduce((a,b)=>a+b,0)/percentiles.length : 0;
-        dataPoints = percentiles.length;
-        latestLvl = rows[0].wastewater_viral_activity_level || 'No Data';
-        latestPtc = rows[0].ptc_15d ? parseFloat(rows[0].ptc_15d) : null;
-      }
-    }
-    
-    // Fall back to siteData synthetic if no live match
-    if(avg === 0 && siteData[s.id]?.[pathogen]) {
-      const sd = siteData[s.id][pathogen];
-      avg = sd.percentile || 0;
-      latestLvl = sd.level || 'No Data';
-      latestPtc = sd.ptc15d;
-      dataPoints = 0; // synthetic
-    }
-    
-    return { s, avg, latestLvl, latestPtc, dataPoints };
-  }).sort((a,b) => b.avg - a.avg);
-  
-  // Find max avg for bar scaling
-  const maxAvg = Math.max(...ranked.map(r=>r.avg), 1);
-  
-  tbody.innerHTML = ranked.map((item, i) => {
-    const {s, avg, latestLvl, latestPtc, dataPoints} = item;
-    const col = lvlColor(latestLvl);
-    const cls = lvlCls(latestLvl);
-    const barPct = Math.round((avg/maxAvg)*100);
-    const ptcStr = latestPtc!=null ? (latestPtc>0?'+':'')+Math.round(latestPtc)+'%' : '—';
-    const ptcCol = latestPtc>10?'var(--bad)':latestPtc<-10?'var(--ok)':'var(--mut)';
-    const avgStr = avg > 0 ? Math.round(avg)+'th pct'+(dataPoints>0?' ('+dataPoints+'w)':' ~') : '—';
-    return `<tr>
-      <td class="rank-num">${i+1}</td>
-      <td><div class="site-name-cell">${s.name}</div><div class="site-county">${s.county} Co. · ${(s.pop/1000).toFixed(0)}K served</div></td>
-      <td>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div class="trend-bar-wrap"><div class="trend-bar-bg"><div class="trend-bar-fill" style="width:${barPct}%;background:${col}"></div></div></div>
-          <span class="trend-val" style="color:${col}">${avgStr}</span>
-        </div>
-      </td>
-      <td><span class="lvl-pill ${cls}">${latestLvl.replace('Limited/','').replace(' Data','').replace('Very ','V.')}</span></td>
-      <td class="trend-delta" style="color:${ptcCol}">${ptcStr}</td>
-    </tr>`;
-  }).join('');
-}
-</script>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-:root{--bg:#0a0e1a;--sur:#111827;--sur2:#1a2235;--brd:#1e2d47;--txt:#e8edf5;--mut:#6b7a99;--acc:#4f9cff;--ok:#22c55e;--warn:#f59e0b;--bad:#ef4444;--lvl-vlo:#a78bfa;--lvl-lo:#38bdf8;--lvl-mod:#f59e0b;--lvl-hi:#f97316;--lvl-vhi:#ef4444;--lvl-nd:#6b7a99;}
+:root{--bg:#0a0e1a;--sur:#111827;--sur2:#1a2235;--brd:#1e2d47;--txt:#e8edf5;--mut:#6b7a99;--acc:#4f9cff;--ok:#22c55e;--warn:#f59e0b;--bad:#ef4444;
+--lvl-vlo:#a78bfa;--lvl-lo:#38bdf8;--lvl-mod:#f59e0b;--lvl-hi:#f97316;--lvl-vhi:#ef4444;--lvl-nd:#6b7a99;}
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
 .hdr{display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--sur);border-bottom:1px solid var(--brd);flex-shrink:0;flex-wrap:wrap;}
 .logo{font-weight:700;font-size:17px;color:var(--txt);white-space:nowrap;}.logo span{color:var(--acc);}
@@ -156,30 +65,36 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);height
 .leg-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--mut);}.leg-dot{width:10px;height:10px;border-radius:50%;}
 .ftr{padding:4px 12px;background:var(--sur);border-top:1px solid var(--brd);display:flex;gap:14px;font-size:9px;color:var(--mut);flex-shrink:0;font-family:'JetBrains Mono',monospace;flex-wrap:wrap;}
 .ftr b{color:var(--txt);}
-.trend-view{flex:1;min-height:0;overflow-y:auto;display:none;padding:20px;background:var(--bg);}
-.trend-view.on{display:block;}
+/* TREND TABS */
+.trend-view{flex:1;min-height:0;overflow-y:auto;display:none;padding:20px;}.trend-view.on{display:block;}
+.trend-header{margin-bottom:20px;}
 .trend-title{font-size:18px;font-weight:700;margin-bottom:4px;}
-.trend-sub{font-size:12px;color:var(--mut);margin-bottom:20px;}
+.trend-sub{font-size:12px;color:var(--mut);}
 .trend-table{width:100%;border-collapse:collapse;font-size:12px;}
-.trend-table th{text-align:left;padding:8px 12px;border-bottom:2px solid var(--brd);color:var(--mut);font-size:10px;font-weight:700;letter-spacing:.06em;}
-.trend-table td{padding:9px 12px;border-bottom:1px solid var(--brd);vertical-align:middle;}
-.trend-table tr:hover td{background:var(--sur2);}
-.rank-num{font-size:13px;font-weight:700;color:var(--mut);width:32px;}
-.site-name-cell{font-weight:600;font-size:13px;}
-.site-county{font-size:10px;color:var(--mut);}
-.trend-bar-wrap{width:180px;position:relative;}
-.trend-bar-bg{height:10px;border-radius:5px;background:var(--sur2);overflow:hidden;}
-.trend-bar-fill{height:100%;border-radius:5px;transition:width .4s;}
-.trend-val{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;min-width:52px;text-align:right;}
-.trend-delta{font-size:10px;min-width:44px;text-align:right;}
+.trend-table th{text-align:left;padding:8px 12px;border-bottom:2px solid var(--brd);color:var(--mut);font-size:10px;font-weight:700;letter-spacing:.06em;white-space:nowrap;}
+.trend-table td{padding:10px 12px;border-bottom:1px solid var(--brd);vertical-align:middle;}
+.trend-table tr:last-child td{border-bottom:none;}
+.trend-table tbody tr:hover td{background:var(--sur2);}
+.rank-num{font-size:14px;font-weight:700;color:var(--mut);width:30px;text-align:center;}
+.site-cell-name{font-weight:600;font-size:13px;color:var(--txt);}
+.site-cell-sub{font-size:10px;color:var(--mut);margin-top:2px;}
+.bar-wrap{display:flex;align-items:center;gap:10px;}
+.bar-bg{flex:1;max-width:160px;height:10px;border-radius:5px;background:var(--sur2);overflow:hidden;}
+.bar-fill{height:100%;border-radius:5px;}
+.bar-val{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;min-width:60px;}
 .lvl-pill{display:inline-block;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:700;white-space:nowrap;}
+.delta-cell{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;}
+/* MAPLIBRE */
 .maplibregl-popup-content{padding:12px;border-radius:8px;max-width:240px;font-family:'Inter',sans-serif;background:#0f172a;color:#e8edf5;border:1px solid #1e2d47;}
 .ppop-title{font-size:13px;font-weight:700;margin-bottom:8px;}
 .ppop-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #1e2d47;font-size:11px;}
 .ppop-row:last-child{border-bottom:none;}.ppop-lbl{color:#6b7a99;font-size:10px;font-weight:600;}
 .ppop-val{font-weight:600;font-family:'JetBrains Mono',monospace;}.maplibregl-popup-close-button{color:#e8edf5;}
 ::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-thumb{background:var(--brd);border-radius:2px;}
-</style></head><body>
+</style>
+</head>
+<body>
+
 <div class="hdr">
   <div class="logo">MA NWSS <span>Wastewater</span></div>
   <div class="live-badge"><div class="dot"></div>WEEKLY DATA</div>
@@ -193,9 +108,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);height
 <div class="main-tabs">
   <div class="main-tab on" id="tab-map" onclick="switchView('map')">MAP</div>
   <div class="main-tab" id="tab-ana" onclick="switchView('analytics')">ANALYTICS</div>
-  <div class="main-tab" id="tab-covid-trend" onclick="switchView('covid-trend')">COVID TREND</div>
-  <div class="main-tab" id="tab-flu-trend" onclick="switchView('flu-trend')">FLU A TREND</div>
+  <div class="main-tab" id="tab-ctrend" onclick="switchView('ctrend')">COVID TREND</div>
+  <div class="main-tab" id="tab-ftrend" onclick="switchView('ftrend')">FLU A TREND</div>
 </div>
+
+<!-- MAP VIEW -->
 <div class="map-view" id="view-map">
   <div id="mwrap"><div id="map"></div><div class="hpop" id="hpop"></div></div>
   <div class="panel">
@@ -204,9 +121,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);height
       <div class="ptab" onclick="sPTab('legend')">LEGEND</div>
     </div>
     <div class="pbody">
-      <div class="psec on" id="sec-sites"><div id="site-list" style="color:var(--mut);font-size:11px;padding:16px;text-align:center">Loading NWSS dataÃ¢ÂÂ¦</div></div>
+      <div class="psec on" id="sec-sites"><div id="site-list" style="color:var(--mut);font-size:11px;padding:16px;text-align:center">Loading NWSS data…</div></div>
       <div class="psec" id="sec-legend">
-        <div style="font-size:11px;color:var(--mut);margin-bottom:10px;line-height:1.5">CDC NWSS Ã¢ÂÂ National Wastewater Surveillance System. Sites report weekly. Data updated every Friday.</div>
+        <div style="font-size:11px;color:var(--mut);margin-bottom:10px;line-height:1.5">CDC NWSS — National Wastewater Surveillance System. Sites report weekly. Data updated every Friday.</div>
         <div style="font-size:10px;font-weight:700;color:var(--txt);margin-bottom:8px;letter-spacing:.06em">VIRAL ACTIVITY LEVEL</div>
         <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
           <div class="srow" style="cursor:default"><div class="sdot" style="background:var(--lvl-vhi)"></div><div class="sname">Very High</div><div class="slvl lvl-vhi">VERY HIGH</div></div>
@@ -221,17 +138,19 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);height
           <b style="color:var(--txt)">Pathogens:</b> SARS-CoV-2, Influenza A, RSV, Mpox, Norovirus (select sites)<br>
           <b style="color:var(--txt)">Method:</b> qPCR / ddPCR on 24-hr flow-weighted composite influent samples<br>
           <b style="color:var(--txt)">Normalization:</b> Flow rate + population equivalents<br>
-          <b style="color:var(--txt)">Lead time:</b> ~4Ã¢ÂÂ7 days ahead of clinical case counts
+          <b style="color:var(--txt)">Lead time:</b> ~4–7 days ahead of clinical case counts
         </div>
       </div>
     </div>
   </div>
 </div>
-<div class="analytics-view" id="view-analytics">
+
+<!-- ANALYTICS VIEW -->
+<div class="analytics-view" id="view-ana">
   <div class="ana-top">
-    <div><div class="ana-title">Wastewater Signal by Site</div><div class="ana-sub">MA NWSS monitoring stations Ã¢ÂÂ latest week ÃÂ· CDC data</div></div>
+    <div><div class="ana-title">Wastewater Signal by Site</div><div class="ana-sub">MA NWSS monitoring stations — latest week · CDC data</div></div>
     <div class="ana-controls">
-      <select class="sel" id="ana-sort" onchange="renderAnalytics()"><option value="level">Sort: Level (highÃ¢ÂÂlow)</option><option value="name">Sort: Name (AÃ¢ÂÂZ)</option><option value="pop">Sort: Population</option></select>
+      <select class="sel" id="ana-sort" onchange="renderAnalytics()"><option value="level">Sort: Level (high→low)</option><option value="name">Sort: Name (A→Z)</option><option value="pop">Sort: Population</option></select>
       <select class="sel" id="ana-filter" onchange="renderAnalytics()"><option value="all">All pathogens</option><option value="SARS-CoV-2">COVID-19</option><option value="Influenza A">Influenza A</option><option value="RSV">RSV</option></select>
     </div>
   </div>
@@ -244,13 +163,38 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);height
     <div class="leg-item"><div class="leg-dot" style="background:var(--lvl-vlo)"></div>Very Low</div>
     <div class="leg-item"><div class="leg-dot" style="background:var(--lvl-nd)"></div>No Data</div>
   </div>
-  <div class="cards-grid" id="cards-grid"><div style="color:var(--mut);font-size:12px;padding:20px;text-align:center;grid-column:1/-1">Loading analyticsÃ¢ÂÂ¦</div></div>
+  <div class="cards-grid" id="cards-grid"><div style="color:var(--mut);font-size:12px;padding:20px;text-align:center;grid-column:1/-1">Loading analytics…</div></div>
 </div>
+
+<!-- COVID TREND VIEW -->
+<div class="trend-view" id="view-ctrend">
+  <div class="trend-header">
+    <div class="trend-title">COVID-19 Wastewater Trend</div>
+    <div class="trend-sub">Sites ranked by 3-measurement rolling average of percentile rank · highest signal first</div>
+  </div>
+  <table class="trend-table">
+    <thead><tr><th>#</th><th>Site</th><th>3-Week Avg Signal</th><th>Latest Level</th><th>15-day Δ</th></tr></thead>
+    <tbody id="tbody-ctrend"><tr><td colspan="5" style="color:var(--mut);padding:20px;text-align:center">Loading…</td></tr></tbody>
+  </table>
+</div>
+
+<!-- FLU A TREND VIEW -->
+<div class="trend-view" id="view-ftrend">
+  <div class="trend-header">
+    <div class="trend-title">Influenza A Wastewater Trend</div>
+    <div class="trend-sub">Sites ranked by 3-measurement rolling average of percentile rank · highest signal first</div>
+  </div>
+  <table class="trend-table">
+    <thead><tr><th>#</th><th>Site</th><th>3-Week Avg Signal</th><th>Latest Level</th><th>15-day Δ</th></tr></thead>
+    <tbody id="tbody-ftrend"><tr><td colspan="5" style="color:var(--mut);padding:20px;text-align:center">Loading…</td></tr></tbody>
+  </table>
+</div>
+
 <div class="ftr">
-  <span>Sites: <b id="ft-sites">Ã¢ÂÂ</b></span>
-  <span>Reporting: <b id="ft-rep">Ã¢ÂÂ</b></span>
-  <span>Updated: <b id="ft-upd">Ã¢ÂÂ</b></span>
-  <span style="margin-left:auto">CDC NWSS ÃÂ· MapLibre GL 4.7.1 ÃÂ· OpenFreeMap</span>
+  <span>Sites: <b id="ft-sites">—</b></span>
+  <span>Reporting: <b id="ft-rep">—</b></span>
+  <span>Updated: <b id="ft-upd">—</b></span>
+  <span style="margin-left:auto">CDC NWSS · MapLibre GL 4.7.1 · OpenFreeMap</span>
 </div>
 <script>
 const MA_SITES=[
@@ -281,60 +225,149 @@ const PATHOGENS=['SARS-CoV-2','Influenza A','RSV'];
 const PATH_LABEL={'SARS-CoV-2':'COVID-19','Influenza A':'Flu A','RSV':'RSV'};
 const PATH_COLOR={'SARS-CoV-2':'#ef4444','Influenza A':'#f59e0b','RSV':'#38bdf8'};
 let activePathogen='SARS-CoV-2',siteData={},mbl,markers={};
+const trendCache={};
+
 setInterval(()=>document.getElementById('clk').textContent=new Date().toLocaleTimeString('en-US',{hour12:false}),1000);
+
 function switchView(v){
-  ['map','analytics','covid-trend','flu-trend'].forEach(id=>{
-    document.getElementById('tab-'+id)?.classList.toggle('on',v===id);
+  ['map','ana','ctrend','ftrend'].forEach(id=>{
+    const tab=document.getElementById('tab-'+id);
+    const view=document.getElementById('view-'+id);
+    if(tab) tab.classList.toggle('on',v===id);
+    if(view){
+      if(id==='map') view.classList.toggle('hidden',v!=='map');
+      else { view.classList.toggle('on',v===id); }
+    }
   });
-  document.getElementById('view-map').classList.toggle('hidden',v!=='map');
-  document.getElementById('view-analytics').classList.toggle('on',v==='analytics');
-  document.getElementById('view-covid-trend').classList.toggle('on',v==='covid-trend');
-  document.getElementById('view-flu-trend').classList.toggle('on',v==='flu-trend');
-  if(v==='map'&&mbl)setTimeout(()=>mbl.resize(),50);
-  if(v==='analytics')renderAnalytics();
-  if(v==='covid-trend')renderTrend('SARS-CoV-2','covid-trend-body');
-  if(v==='flu-trend')renderTrend('Influenza A','flu-trend-body');
+  if(v==='map'&&mbl) setTimeout(()=>mbl.resize(),50);
+  if(v==='ana') renderAnalytics();
+  if(v==='ctrend') renderTrend('SARS-CoV-2','tbody-ctrend');
+  if(v==='ftrend') renderTrend('Influenza A','tbody-ftrend');
 }
+
 function sPTab(t){document.querySelectorAll('.ptab').forEach((el,i)=>el.classList.toggle('on',['sites','legend'][i]===t));document.querySelectorAll('.psec').forEach(s=>s.classList.remove('on'));document.getElementById('sec-'+t).classList.add('on');}
 function togglePathogen(p){activePathogen=p;document.getElementById('btn-covid').classList.toggle('on',p==='SARS-CoV-2');document.getElementById('btn-flu').classList.toggle('on',p==='Influenza A');document.getElementById('btn-rsv').classList.toggle('on',p==='RSV');updateMarkers();renderSiteList();}
-async function fetchNWSS(){try{const r=await fetch('https://data.cdc.gov/resource/2ew6-ywp6.json?wwtp_jurisdiction=Massachusetts&$limit=500&$order=date_end%20DESC&$select=key_plot_id,wwtp_name,county_names,population_served,date_end,percentile,detect_prop_15d,ptc_15d,wwtp_state_id,pathogen,pathogen_group,wastewater_viral_activity_level');if(!r.ok)throw new Error('HTTP '+r.status);return await r.json();}catch(e){console.warn('NWSS:',e.message);return null;}}
+
+async function fetchNWSS(){
+  try{
+    const r=await fetch('https://data.cdc.gov/resource/2ew6-ywp6.json?wwtp_jurisdiction=Massachusetts&$limit=500&$order=date_end%20DESC&$select=key_plot_id,wwtp_name,county_names,population_served,date_end,percentile,detect_prop_15d,ptc_15d,wwtp_state_id,pathogen,pathogen_group,wastewater_viral_activity_level');
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return await r.json();
+  }catch(e){console.warn('NWSS:',e.message);return null;}
+}
+
 function matchSite(n){if(!n)return null;const nl=n.toLowerCase();for(const s of MA_SITES){if(s.wwtp.toLowerCase().split(' ').filter(w=>w.length>3).some(p=>nl.includes(p)))return s.id;}return null;}
 function synData(id,p){const s=id.charCodeAt(5)+p.charCodeAt(0);const l=['Very Low','Very Low','Low','Low','Moderate','Moderate','High','Very High'];return{level:l[s%l.length],ptc15d:(s*7%80)-40,percentile:(s*11%90)+5,date:'2025-03-21',synthetic:true};}
-async function loadData(){const rows=await fetchNWSS();MA_SITES.forEach(s=>{siteData[s.id]={};PATHOGENS.forEach(p=>{siteData[s.id][p]=synData(s.id,p);});});if(rows&&rows.length){const bk={};rows.forEach(r=>{const k=(r.wwtp_name||'')+'||'+(r.pathogen||'SARS-CoV-2');if(!bk[k]||r.date_end>bk[k].date_end)bk[k]=r;});Object.values(bk).forEach(r=>{const sid=matchSite(r.wwtp_name);if(!sid)return;const p=r.pathogen||'SARS-CoV-2';if(!PATHOGENS.includes(p))return;siteData[sid][p]={level:r.wastewater_viral_activity_level||'No Data',ptc15d:r.ptc_15d?parseFloat(r.ptc_15d):null,percentile:r.percentile?parseFloat(r.percentile):null,date:r.date_end?r.date_end.substring(0,10):'Ã¢ÂÂ',synthetic:false};});const dates=Object.values(bk).map(r=>r.date_end).filter(Boolean).sort().reverse();document.getElementById('ft-upd').textContent=dates[0]?.substring(0,10)||'Ã¢ÂÂ';document.getElementById('ft-rep').textContent=Object.keys(bk).length;}else{document.getElementById('ft-upd').textContent='Simulated';}document.getElementById('ft-sites').textContent=MA_SITES.length;updateMarkers();renderSiteList();}
-window.addEventListener('load', async function() {
-mbl=new maplibregl.Map({container:'map',style:'https://tiles.openfreemap.org/styles/liberty',center:[-71.8,42.3],zoom:7.2,attributionControl:false});
-mbl.addControl(new maplibregl.NavigationControl(),'top-right');
-mbl.addControl(new maplibregl.AttributionControl({compact:true}),'bottom-right');
-mbl.on('load',async()=>{mbl.setGlyphs('https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf');await loadData();});
-function updateMarkers(){Object.values(markers).forEach(m=>m.remove());markers={};MA_SITES.forEach(s=>{const info=siteData[s.id]?.[activePathogen]||{};const lvl=info.level||'No Data';const col=lvlColor(lvl);const rank=lvlRank(lvl);const size=12+rank*4;const ns='http://www.w3.org/2000/svg';const svg=document.createElementNS(ns,'svg');svg.setAttribute('width',size+8);svg.setAttribute('height',size+8);svg.setAttribute('viewBox','0 0 '+(size+8)+' '+(size+8));svg.style.cssText='filter:drop-shadow(0 2px 6px rgba(0,0,0,.7));display:block;cursor:pointer;';const c=document.createElementNS(ns,'circle');c.setAttribute('cx',(size+8)/2);c.setAttribute('cy',(size+8)/2);c.setAttribute('r',size/2);c.setAttribute('fill',col);c.setAttribute('stroke','white');c.setAttribute('stroke-width','2');svg.appendChild(c);if(rank>=4){const rg=document.createElementNS(ns,'circle');rg.setAttribute('cx',(size+8)/2);rg.setAttribute('cy',(size+8)/2);rg.setAttribute('r',size/2+1);rg.setAttribute('fill','none');rg.setAttribute('stroke',col);rg.setAttribute('stroke-width','1.5');rg.setAttribute('opacity','0.5');svg.appendChild(rg);}const mk=new maplibregl.Marker({element:svg,anchor:'center'}).setLngLat([s.lng,s.lat]).addTo(mbl);svg.addEventListener('mouseenter',e=>showHpop(s,e));svg.addEventListener('mousemove',e=>moveHpop(e));svg.addEventListener('mouseleave',()=>document.getElementById('hpop').style.display='none');svg.addEventListener('click',e=>{e.stopPropagation();showPopup(s);});markers[s.id]=mk;});}
-function showHpop(s,e){const hp=document.getElementById('hpop');hp.style.display='block';const d=siteData[s.id]||{};hp.innerHTML='<div class="hpop-name">'+s.name+'</div><div class="hpop-sub">'+s.county+' Co. ÃÂ· '+(s.pop/1000).toFixed(0)+'K served</div>'+PATHOGENS.map(p=>{const info=d[p]||{};const lvl=info.level||'No Data';const ptc=info.ptc15d!=null?(info.ptc15d>0?'+':'')+Math.round(info.ptc15d)+'%':'Ã¢ÂÂ';return '<div class="hpop-row"><span class="hpop-lbl">'+PATH_LABEL[p]+'</span><span class="hpop-val" style="color:'+lvlColor(lvl)+'">'+lvl+'</span><span class="hpop-val" style="color:var(--mut);font-size:9px">'+ptc+'</span></div>';}).join('');moveHpop(e);}
-function moveHpop(e){const hp=document.getElementById('hpop');const rect=document.getElementById('mwrap').getBoundingClientRect();let x=e.clientX-rect.left+14,y=e.clientY-rect.top-10;if(x+280>rect.width)x=e.clientX-rect.left-290;hp.style.left=x+'px';hp.style.top=y+'px';}
-function showPopup(s){const d=siteData[s.id]||{};const rows=PATHOGENS.map(p=>{const info=d[p]||{};const lvl=info.level||'No Data';const ptc=info.ptc15d!=null?(info.ptc15d>0?'+':'')+Math.round(info.ptc15d)+'%':'Ã¢ÂÂ';return '<div class="ppop-row"><span class="ppop-lbl">'+PATH_LABEL[p]+'</span><span class="ppop-val" style="color:'+lvlColor(lvl)+'">'+lvl+'</span><span class="ppop-lbl">'+ptc+'</span></div>';}).join('');const syn=Object.values(d).some(v=>v.synthetic);new maplibregl.Popup({maxWidth:'260px',closeButton:true}).setLngLat([s.lng,s.lat]).setHTML('<div><div class="ppop-title">'+s.name+'</div><div style="font-size:10px;color:#6b7a99;margin-bottom:8px">'+s.county+' County ÃÂ· '+(s.pop>=1e6?(s.pop/1e6).toFixed(1)+'M':(s.pop/1000).toFixed(0)+'K')+' served ÃÂ· '+(d[activePathogen]?.date||'Ã¢ÂÂ')+'</div><div style="font-size:9px;font-weight:700;color:#4f9cff;margin-bottom:5px">PATHOGEN LEVELS</div>'+rows+(syn?'<div style="font-size:9px;color:#6b7a99;margin-top:6px;padding-top:6px;border-top:1px solid #1e2d47">Ã¢ÂÂ  Illustrative levels shown</div>':'')+'</div>').addTo(mbl);}
-function renderSiteList(){const el=document.getElementById('site-list');const sorted=[...MA_SITES].sort((a,b)=>lvlRank(siteData[b.id]?.[activePathogen]?.level||'No Data')-lvlRank(siteData[a.id]?.[activePathogen]?.level||'No Data'));el.innerHTML=sorted.map(s=>{const info=siteData[s.id]?.[activePathogen]||{};const lvl=info.level||'No Data';const col=lvlColor(lvl);const cls=lvlCls(lvl);const ptc=info.ptc15d!=null?'<span style="color:'+(info.ptc15d>=0?'var(--ok)':'var(--bad)')+'">'+( info.ptc15d>=0?'+':'')+Math.round(info.ptc15d)+'%</span>':'';return '<div class="srow" onclick="mbl&&mbl.flyTo({center:['+s.lng+','+s.lat+'],zoom:11,duration:700});showPopup(MA_SITES.find(x=>x.id===''+s.id+''))"><div class="sdot" style="background:'+col+'"></div><div class="sname">'+s.name+'<br><span class="spop">'+(s.pop/1000).toFixed(0)+'K served</span></div>'+ptc+'<div class="slvl '+cls+'">'+lvl.replace('Limited/','').replace(' Data','').replace('Very ','V.')+'</div></div>';}).join('');}
-function renderAnalytics(){const sortBy=document.getElementById('ana-sort')?.value||'level';const fp=document.getElementById('ana-filter')?.value||'all';const ps=fp==='all'?PATHOGENS:[fp];let sites=[...MA_SITES];if(sortBy==='level')sites.sort((a,b)=>Math.max(...ps.map(p=>lvlRank(siteData[b.id]?.[p]?.level||'No Data')))-Math.max(...ps.map(p=>lvlRank(siteData[a.id]?.[p]?.level||'No Data'))));else if(sortBy==='name')sites.sort((a,b)=>a.name.localeCompare(b.name));else sites.sort((a,b)=>b.pop-a.pop);document.getElementById('cards-grid').innerHTML=sites.map(s=>buildCard(s,ps)).join('');}
-function buildCard(s,ps){const d=siteData[s.id]||{};const pf=s.pop>=1e6?(s.pop/1e6).toFixed(1)+'M':(s.pop/1000).toFixed(0)+'K';const segs=ps.map(p=>{const r=lvlRank((d[p]||{}).level||'No Data');return '<div class="spec-seg" style="flex:'+Math.max(10,r*20)+';background:'+PATH_COLOR[p]+';opacity:'+(0.3+r*0.14)+';"></div>';}).join('');const pills=ps.map(p=>{const info=d[p]||{};const lvl=info.level||'No Data';const col=lvlColor(lvl);const ptc=info.ptc15d;const tr=ptc==null?'':ptc>10?'Ã¢ÂÂ':ptc<-10?'Ã¢ÂÂ':'Ã¢ÂÂ';const tc=ptc>10?'var(--bad)':ptc<-10?'var(--ok)':'var(--mut)';return '<div class="agent-pill"><div><div style="font-size:9px;font-weight:700;color:'+PATH_COLOR[p]+'">'+PATH_LABEL[p]+'</div><div class="agent-name">'+(info.synthetic?'~':'')+lvl+'</div></div><div style="text-align:right"><div class="agent-val" style="color:'+col+'">'+(info.percentile!=null?Math.round(info.percentile)+'th':'Ã¢ÂÂ')+'</div><div style="font-size:9px;color:'+tc+'">'+tr+(ptc!=null?(ptc>0?'+':'')+Math.round(ptc)+'%':'')+'</div></div></div>';}).join('');const mx=ps.reduce((m,p)=>{const r=lvlRank((d[p]||{}).level||'No Data');return r>lvlRank(m)?(d[p]?.level||'No Data'):m;},'No Data');return '<div class="site-card" style="border-left:3px solid '+lvlColor(mx)+'"><div class="card-hdr"><div class="card-dot" style="background:'+lvlColor(mx)+'"></div><div class="card-name">'+s.name+'</div><div class="card-pop">'+s.county+' ÃÂ· '+pf+'</div></div><div class="card-body"><div class="spectrum-wrap"><div class="spectrum-label">SIGNAL SPECTRUM</div><div class="spectrum-bar">'+segs+'</div></div><div class="agent-grid">'+pills+'</div></div></div>';}
 
+async function loadData(){
+  const rows=await fetchNWSS();
+  MA_SITES.forEach(s=>{siteData[s.id]={};PATHOGENS.forEach(p=>{siteData[s.id][p]=synData(s.id,p);});});
+  if(rows&&rows.length){
+    const bk={};
+    rows.forEach(r=>{const k=(r.wwtp_name||'')+'||'+(r.pathogen||'SARS-CoV-2');if(!bk[k]||r.date_end>bk[k].date_end)bk[k]=r;});
+    Object.values(bk).forEach(r=>{
+      const sid=matchSite(r.wwtp_name);if(!sid)return;
+      const p=r.pathogen||'SARS-CoV-2';if(!PATHOGENS.includes(p))return;
+      siteData[sid][p]={level:r.wastewater_viral_activity_level||'No Data',ptc15d:r.ptc_15d?parseFloat(r.ptc_15d):null,percentile:r.percentile?parseFloat(r.percentile):null,date:r.date_end?r.date_end.substring(0,10):'\u2014',synthetic:false};
+    });
+    const dates=Object.values(bk).map(r=>r.date_end).filter(Boolean).sort().reverse();
+    document.getElementById('ft-upd').textContent=dates[0]?.substring(0,10)||'\u2014';
+    document.getElementById('ft-rep').textContent=Object.keys(bk).length;
+  }else{document.getElementById('ft-upd').textContent='Simulated';}
+  document.getElementById('ft-sites').textContent=MA_SITES.length;
+  updateMarkers();renderSiteList();
+}
+
+// ── TREND TABS ────────────────────────────────────────────────────────────────
+async function fetchTrendData(pathogen){
+  if(trendCache[pathogen]) return trendCache[pathogen];
+  try{
+    const enc=encodeURIComponent(pathogen);
+    const url='https://data.cdc.gov/resource/2ew6-ywp6.json?wwtp_jurisdiction=Massachusetts&$limit=2000&$order=date_end%20DESC&$where=pathogen=%27'+enc+'%27&$select=wwtp_name,date_end,percentile,ptc_15d,wastewater_viral_activity_level';
+    const res=await fetch(url);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const rows=await res.json();
+    // Group by site name, keep latest 3
+    const bySite={};
+    rows.forEach(r=>{
+      const k=r.wwtp_name||'';
+      if(!bySite[k]) bySite[k]=[];
+      if(bySite[k].length<3) bySite[k].push(r);
+    });
+    trendCache[pathogen]=bySite;
+    return bySite;
+  }catch(e){console.warn('trend:',e);return null;}
+}
+
+async function renderTrend(pathogen,tbodyId){
+  const tbody=document.getElementById(tbodyId);
+  tbody.innerHTML='<tr><td colspan="5" style="color:var(--mut);padding:20px;text-align:center">Fetching CDC data\u2026</td></tr>';
+  const live=await fetchTrendData(pathogen);
+
+  const ranked=MA_SITES.map(s=>{
+    let avg=0,latestLvl='No Data',latestPtc=null,nWeeks=0;
+    if(live){
+      const key=Object.keys(live).find(k=>s.wwtp.toLowerCase().split(' ').filter(w=>w.length>3).some(p=>k.toLowerCase().includes(p)));
+      if(key&&live[key].length>0){
+        const rows=live[key];
+        const pcts=rows.map(r=>r.percentile?parseFloat(r.percentile):0).filter(v=>v>0);
+        avg=pcts.length?pcts.reduce((a,b)=>a+b,0)/pcts.length:0;
+        nWeeks=pcts.length;
+        latestLvl=rows[0].wastewater_viral_activity_level||'No Data';
+        latestPtc=rows[0].ptc_15d?parseFloat(rows[0].ptc_15d):null;
+      }
+    }
+    // Fall back to siteData
+    if(avg===0&&siteData[s.id]?.[pathogen]){
+      const sd=siteData[s.id][pathogen];
+      avg=sd.percentile||0;latestLvl=sd.level||'No Data';latestPtc=sd.ptc15d;nWeeks=0;
+    }
+    return{s,avg,latestLvl,latestPtc,nWeeks};
+  }).sort((a,b)=>b.avg-a.avg);
+
+  const maxAvg=Math.max(...ranked.map(r=>r.avg),1);
+
+  tbody.innerHTML=ranked.map(({s,avg,latestLvl,latestPtc,nWeeks},i)=>{
+    const col=lvlColor(latestLvl);
+    const cls=lvlCls(latestLvl);
+    const barW=Math.round((avg/maxAvg)*100);
+    const avgStr=avg>0?(Math.round(avg)+'th'):'\u2014';
+    const wkStr=nWeeks>0?' ('+nWeeks+'w)':' ~';
+    const ptcStr=latestPtc!=null?(latestPtc>0?'+':'')+Math.round(latestPtc)+'%':'\u2014';
+    const ptcCol=latestPtc>10?'var(--bad)':latestPtc<-10?'var(--ok)':'var(--mut)';
+    const lvlShort=latestLvl.replace('Limited/','').replace(' Data','').replace('Very ','V.');
+    return '<tr>'
+      +'<td class="rank-num">'+(i+1)+'</td>'
+      +'<td><div class="site-cell-name">'+s.name+'</div><div class="site-cell-sub">'+s.county+' Co. \u00b7 '+(s.pop/1000).toFixed(0)+'K served</div></td>'
+      +'<td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:'+barW+'%;background:'+col+'"></div></div>'
+      +'<span class="bar-val" style="color:'+col+'">'+avgStr+wkStr+'</span></div></td>'
+      +'<td><span class="lvl-pill '+cls+'">'+lvlShort+'</span></td>'
+      +'<td class="delta-cell" style="color:'+ptcCol+'">'+ptcStr+'</td>'
+      +'</tr>';
+  }).join('');
+}
+
+// ── MAP ───────────────────────────────────────────────────────────────────────
+window.addEventListener('load', async function(){
+  mbl=new maplibregl.Map({container:'map',style:'https://tiles.openfreemap.org/styles/liberty',center:[-71.8,42.3],zoom:7.2,attributionControl:false});
+  mbl.addControl(new maplibregl.NavigationControl(),'top-right');
+  mbl.addControl(new maplibregl.AttributionControl({compact:true}),'bottom-right');
+  mbl.on('load',async()=>{
+    mbl.setGlyphs('https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf');
+    await loadData();
+  });
 });
-</script>
 
-<div class="trend-view" id="view-covid-trend">
-  <div class="trend-title">COVID-19 Wastewater Trend</div>
-  <div class="trend-sub">Sites ranked by 3-measurement rolling average · highest signal first</div>
-  <table class="trend-table">
-    <thead><tr>
-      <th>#</th><th>Site</th><th>Avg Signal (3-week)</th><th>Latest Level</th><th>15-day Change</th>
-    </tr></thead>
-    <tbody id="covid-trend-body"><tr><td colspan="5" style="color:var(--mut);padding:20px;text-align:center">Loading…</td></tr></tbody>
-  </table>
-</div>
-<div class="trend-view" id="view-flu-trend">
-  <div class="trend-title">Influenza A Wastewater Trend</div>
-  <div class="trend-sub">Sites ranked by 3-measurement rolling average · highest signal first</div>
-  <table class="trend-table">
-    <thead><tr>
-      <th>#</th><th>Site</th><th>Avg Signal (3-week)</th><th>Latest Level</th><th>15-day Change</th>
-    </tr></thead>
-    <tbody id="flu-trend-body"><tr><td colspan="5" style="color:var(--mut);padding:20px;text-align:center">Loading…</td></tr></tbody>
-  </table>
-</div>
-</body></html>
+function updateMarkers(){Object.values(markers).forEach(m=>m.remove());markers={};MA_SITES.forEach(s=>{const info=siteData[s.id]?.[activePathogen]||{};const lvl=info.level||'No Data';const col=lvlColor(lvl);const rank=lvlRank(lvl);const size=12+rank*4;const ns='http://www.w3.org/2000/svg';const svg=document.createElementNS(ns,'svg');svg.setAttribute('width',size+8);svg.setAttribute('height',size+8);svg.setAttribute('viewBox','0 0 '+(size+8)+' '+(size+8));svg.style.cssText='filter:drop-shadow(0 2px 6px rgba(0,0,0,.7));display:block;cursor:pointer;';const c=document.createElementNS(ns,'circle');c.setAttribute('cx',(size+8)/2);c.setAttribute('cy',(size+8)/2);c.setAttribute('r',size/2);c.setAttribute('fill',col);c.setAttribute('stroke','white');c.setAttribute('stroke-width','2');svg.appendChild(c);if(rank>=4){const rg=document.createElementNS(ns,'circle');rg.setAttribute('cx',(size+8)/2);rg.setAttribute('cy',(size+8)/2);rg.setAttribute('r',size/2+1);rg.setAttribute('fill','none');rg.setAttribute('stroke',col);rg.setAttribute('stroke-width','1.5');rg.setAttribute('opacity','0.5');svg.appendChild(rg);}const mk=new maplibregl.Marker({element:svg,anchor:'center'}).setLngLat([s.lng,s.lat]).addTo(mbl);svg.addEventListener('mouseenter',e=>showHpop(s,e));svg.addEventListener('mousemove',e=>moveHpop(e));svg.addEventListener('mouseleave',()=>document.getElementById('hpop').style.display='none');svg.addEventListener('click',e=>{e.stopPropagation();showPopup(s);});markers[s.id]=mk;});}
+
+function showHpop(s,e){const hp=document.getElementById('hpop');hp.style.display='block';const d=siteData[s.id]||{};hp.innerHTML='<div class="hpop-name">'+s.name+'</div><div class="hpop-sub">'+s.county+' Co. \u00b7 '+(s.pop/1000).toFixed(0)+'K served</div>'+PATHOGENS.map(p=>{const info=d[p]||{};const lvl=info.level||'No Data';const ptc=info.ptc15d!=null?(info.ptc15d>0?'+':'')+Math.round(info.ptc15d)+'%':'\u2014';return '<div class="hpop-row"><span class="hpop-lbl">'+PATH_LABEL[p]+'</span><span class="hpop-val" style="color:'+lvlColor(lvl)+'">'+lvl+'</span><span class="hpop-val" style="color:var(--mut);font-size:9px">'+ptc+'</span></div>';}).join('');moveHpop(e);}
+function moveHpop(e){const hp=document.getElementById('hpop');const rect=document.getElementById('mwrap').getBoundingClientRect();let x=e.clientX-rect.left+14,y=e.clientY-rect.top-10;if(x+280>rect.width)x=e.clientX-rect.left-290;hp.style.left=x+'px';hp.style.top=y+'px';}
+function showPopup(s){const d=siteData[s.id]||{};const rows=PATHOGENS.map(p=>{const info=d[p]||{};const lvl=info.level||'No Data';const ptc=info.ptc15d!=null?(info.ptc15d>0?'+':'')+Math.round(info.ptc15d)+'%':'\u2014';return '<div class="ppop-row"><span class="ppop-lbl">'+PATH_LABEL[p]+'</span><span class="ppop-val" style="color:'+lvlColor(lvl)+'">'+lvl+'</span><span class="ppop-lbl">'+ptc+'</span></div>';}).join('');const syn=Object.values(d).some(v=>v.synthetic);new maplibregl.Popup({maxWidth:'260px',closeButton:true}).setLngLat([s.lng,s.lat]).setHTML('<div><div class="ppop-title">'+s.name+'</div><div style="font-size:10px;color:#6b7a99;margin-bottom:8px">'+s.county+' County \u00b7 '+(s.pop>=1e6?(s.pop/1e6).toFixed(1)+'M':(s.pop/1000).toFixed(0)+'K')+' served \u00b7 '+(d[activePathogen]?.date||'\u2014')+'</div><div style="font-size:9px;font-weight:700;color:#4f9cff;margin-bottom:5px">PATHOGEN LEVELS</div>'+rows+(syn?'<div style="font-size:9px;color:#6b7a99;margin-top:6px;padding-top:6px;border-top:1px solid #1e2d47">\u26a0 Illustrative levels shown</div>':'')+'</div>').addTo(mbl);}
+
+function renderSiteList(){const el=document.getElementById('site-list');const sorted=[...MA_SITES].sort((a,b)=>lvlRank(siteData[b.id]?.[activePathogen]?.level||'No Data')-lvlRank(siteData[a.id]?.[activePathogen]?.level||'No Data'));el.innerHTML=sorted.map(s=>{const info=siteData[s.id]?.[activePathogen]||{};const lvl=info.level||'No Data';const col=lvlColor(lvl);const cls=lvlCls(lvl);const ptc=info.ptc15d!=null?'<span style="color:'+(info.ptc15d>=0?'var(--ok)':'var(--bad)')+'">'+( info.ptc15d>=0?'+':'')+Math.round(info.ptc15d)+'%</span>':'';return '<div class="srow" onclick="mbl&&mbl.flyTo({center:['+s.lng+','+s.lat+'],zoom:11,duration:700});showPopup(MA_SITES.find(x=>x.id===\''+s.id+'\'))"><div class="sdot" style="background:'+col+'"></div><div class="sname">'+s.name+'<br><span class="spop">'+(s.pop/1000).toFixed(0)+'K served</span></div>'+ptc+'<div class="slvl '+cls+'">'+lvl.replace('Limited/','').replace(' Data','').replace('Very ','V.')+'</div></div>';}).join('');}
+
+function renderAnalytics(){const sortBy=document.getElementById('ana-sort')?.value||'level';const fp=document.getElementById('ana-filter')?.value||'all';const ps=fp==='all'?PATHOGENS:[fp];let sites=[...MA_SITES];if(sortBy==='level')sites.sort((a,b)=>Math.max(...ps.map(p=>lvlRank(siteData[b.id]?.[p]?.level||'No Data')))-Math.max(...ps.map(p=>lvlRank(siteData[a.id]?.[p]?.level||'No Data'))));else if(sortBy==='name')sites.sort((a,b)=>a.name.localeCompare(b.name));else sites.sort((a,b)=>b.pop-a.pop);document.getElementById('cards-grid').innerHTML=sites.map(s=>buildCard(s,ps)).join('');}
+function buildCard(s,ps){const d=siteData[s.id]||{};const pf=s.pop>=1e6?(s.pop/1e6).toFixed(1)+'M':(s.pop/1000).toFixed(0)+'K';const segs=ps.map(p=>{const r=lvlRank((d[p]||{}).level||'No Data');return '<div class="spec-seg" style="flex:'+Math.max(10,r*20)+';background:'+PATH_COLOR[p]+';opacity:'+(0.3+r*0.14)+';"></div>';}).join('');const pills=ps.map(p=>{const info=d[p]||{};const lvl=info.level||'No Data';const col=lvlColor(lvl);const ptc=info.ptc15d;const tr=ptc==null?'':ptc>10?'\u2191':ptc<-10?'\u2193':'\u2192';const tc=ptc>10?'var(--bad)':ptc<-10?'var(--ok)':'var(--mut)';return '<div class="agent-pill"><div><div style="font-size:9px;font-weight:700;color:'+PATH_COLOR[p]+'">'+PATH_LABEL[p]+'</div><div class="agent-name">'+(info.synthetic?'~':'')+lvl+'</div></div><div style="text-align:right"><div class="agent-val" style="color:'+col+'">'+(info.percentile!=null?Math.round(info.percentile)+'th':'\u2014')+'</div><div style="font-size:9px;color:'+tc+'">'+tr+(ptc!=null?(ptc>0?'+':'')+Math.round(ptc)+'%':'')+'</div></div></div>';}).join('');const mx=ps.reduce((m,p)=>{const r=lvlRank((d[p]||{}).level||'No Data');return r>lvlRank(m)?(d[p]?.level||'No Data'):m;},'No Data');return '<div class="site-card" style="border-left:3px solid '+lvlColor(mx)+'"><div class="card-hdr"><div class="card-dot" style="background:'+lvlColor(mx)+'"></div><div class="card-name">'+s.name+'</div><div class="card-pop">'+s.county+' \u00b7 '+pf+'</div></div><div class="card-body"><div class="spectrum-wrap"><div class="spectrum-label">SIGNAL SPECTRUM</div><div class="spectrum-bar">'+segs+'</div></div><div class="agent-grid">'+pills+'</div></div></div>';}
+</script>
+</body>
+</html>
