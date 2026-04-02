@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>MA NWSS â Wastewater Surveillance</title>
+<title>MA NWSS Ã¢ÂÂ Wastewater Surveillance</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
@@ -84,6 +84,40 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);height
 .bar-val{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;min-width:70px;}
 .lvl-pill{display:inline-block;padding:5px 10px;border-radius:5px;font-size:12px;font-weight:800;white-space:nowrap;letter-spacing:.03em;}
 .delta-cell{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;}
+
+/* CHART VIEW */
+.chart-view{flex:1;min-height:0;overflow-y:auto;display:none;padding:20px 24px;background:var(--bg);}
+.chart-view.on{display:block;}
+.chart-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+.chart-title{font-size:22px;font-weight:700;color:#f0f4ff;}
+.chart-sub{font-size:13px;color:#8fa0c0;margin-top:4px;}
+.chart-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.chart-pathogen-btn{padding:5px 14px;border:1px solid var(--brd);background:var(--sur2);color:var(--mut);border-radius:20px;cursor:pointer;font-size:11px;font-weight:700;letter-spacing:.04em;transition:all .15s;}
+.chart-pathogen-btn.on{color:#fff;border-color:transparent;}
+.chart-sort-sel{background:var(--sur2);border:1px solid var(--brd);color:var(--txt);border-radius:5px;padding:5px 10px;font-size:11px;font-family:'Inter',sans-serif;cursor:pointer;}
+.chart-grid{display:grid;grid-template-columns:220px 1fr 200px;gap:0;align-items:stretch;}
+.chart-row{display:contents;}
+.chart-row:hover .town-label,.chart-row:hover .chart-bar-cell,.chart-row:hover .stats-cell{background:rgba(255,255,255,.03);}
+.town-label{display:flex;align-items:center;padding:6px 14px 6px 4px;border-bottom:1px solid rgba(255,255,255,.05);min-height:46px;}
+.town-name{font-size:13px;font-weight:600;color:#e0e8ff;line-height:1.2;}
+.town-pop{font-size:10px;color:#6b8cba;margin-top:2px;}
+.chart-bar-cell{display:flex;align-items:center;padding:6px 12px;border-bottom:1px solid rgba(255,255,255,.05);min-height:46px;}
+.chart-bar-outer{flex:1;height:22px;background:var(--sur2);border-radius:4px;overflow:hidden;position:relative;}
+.chart-bar-inner{height:100%;border-radius:4px;transition:width .5s cubic-bezier(.4,0,.2,1);position:relative;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;}
+.chart-bar-pct-label{font-size:10px;font-weight:700;color:rgba(255,255,255,.9);white-space:nowrap;}
+.stats-cell{display:flex;align-items:center;gap:12px;padding:6px 8px 6px 16px;border-bottom:1px solid rgba(255,255,255,.05);min-height:46px;}
+.stat-block{text-align:center;min-width:44px;}
+.stat-val{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;line-height:1.2;}
+.stat-lbl{font-size:9px;color:#6b8cba;letter-spacing:.05em;margin-top:1px;}
+.stat-rank{font-size:20px;font-weight:800;color:#6b8cba;min-width:32px;text-align:center;}
+.lvl-dot-sm{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.chart-header-row{display:contents;}
+.chart-header-row .town-label,.chart-header-row .chart-bar-cell,.chart-header-row .stats-cell{
+  padding-bottom:8px;border-bottom:2px solid var(--brd);font-size:10px;font-weight:700;color:#8fa0c0;letter-spacing:.06em;min-height:32px;}
+.chart-legend{display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+.chart-legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:#8fa0c0;}
+.chart-legend-bar{width:20px;height:10px;border-radius:3px;}
+
 /* MAPLIBRE */
 .maplibregl-popup-content{padding:12px;border-radius:8px;max-width:240px;font-family:'Inter',sans-serif;background:#0f172a;color:#e8edf5;border:1px solid #1e2d47;}
 .ppop-title{font-size:13px;font-weight:700;margin-bottom:8px;}
@@ -110,6 +144,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);height
   <div class="main-tab" id="tab-ana" onclick="switchView('analytics')">ANALYTICS</div>
   <div class="main-tab" id="tab-ctrend" onclick="switchView('ctrend')">COVID TREND</div>
   <div class="main-tab" id="tab-ftrend" onclick="switchView('ftrend')">FLU A TREND</div>
+  <div class="main-tab" id="tab-chart" onclick="switchView('chart')">CHART VIEW</div>
 </div>
 
 <!-- MAP VIEW -->
@@ -121,9 +156,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);height
       <div class="ptab" onclick="sPTab('legend')">LEGEND</div>
     </div>
     <div class="pbody">
-      <div class="psec on" id="sec-sites"><div id="site-list" style="color:var(--mut);font-size:11px;padding:16px;text-align:center">Loading NWSS dataâ¦</div></div>
+      <div class="psec on" id="sec-sites"><div id="site-list" style="color:var(--mut);font-size:11px;padding:16px;text-align:center">Loading NWSS dataÃ¢ÂÂ¦</div></div>
       <div class="psec" id="sec-legend">
-        <div style="font-size:11px;color:var(--mut);margin-bottom:10px;line-height:1.5">CDC NWSS â National Wastewater Surveillance System. Sites report weekly. Data updated every Friday.</div>
+        <div style="font-size:11px;color:var(--mut);margin-bottom:10px;line-height:1.5">CDC NWSS Ã¢ÂÂ National Wastewater Surveillance System. Sites report weekly. Data updated every Friday.</div>
         <div style="font-size:10px;font-weight:700;color:var(--txt);margin-bottom:8px;letter-spacing:.06em">VIRAL ACTIVITY LEVEL</div>
         <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
           <div class="srow" style="cursor:default"><div class="sdot" style="background:var(--lvl-vhi)"></div><div class="sname">Very High</div><div class="slvl lvl-vhi">VERY HIGH</div></div>
@@ -138,7 +173,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);height
           <b style="color:var(--txt)">Pathogens:</b> SARS-CoV-2, Influenza A, RSV, Mpox, Norovirus (select sites)<br>
           <b style="color:var(--txt)">Method:</b> qPCR / ddPCR on 24-hr flow-weighted composite influent samples<br>
           <b style="color:var(--txt)">Normalization:</b> Flow rate + population equivalents<br>
-          <b style="color:var(--txt)">Lead time:</b> ~4â7 days ahead of clinical case counts
+          <b style="color:var(--txt)">Lead time:</b> ~4Ã¢ÂÂ7 days ahead of clinical case counts
         </div>
       </div>
     </div>
@@ -148,9 +183,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);height
 <!-- ANALYTICS VIEW -->
 <div class="analytics-view" id="view-ana">
   <div class="ana-top">
-    <div><div class="ana-title">Wastewater Signal by Site</div><div class="ana-sub">MA NWSS monitoring stations â latest week Â· CDC data</div></div>
+    <div><div class="ana-title">Wastewater Signal by Site</div><div class="ana-sub">MA NWSS monitoring stations Ã¢ÂÂ latest week ÃÂ· CDC data</div></div>
     <div class="ana-controls">
-      <select class="sel" id="ana-sort" onchange="renderAnalytics()"><option value="level">Sort: Level (highâlow)</option><option value="name">Sort: Name (AâZ)</option><option value="pop">Sort: Population</option></select>
+      <select class="sel" id="ana-sort" onchange="renderAnalytics()"><option value="level">Sort: Level (highÃ¢ÂÂlow)</option><option value="name">Sort: Name (AÃ¢ÂÂZ)</option><option value="pop">Sort: Population</option></select>
       <select class="sel" id="ana-filter" onchange="renderAnalytics()"><option value="all">All pathogens</option><option value="SARS-CoV-2">COVID-19</option><option value="Influenza A">Influenza A</option><option value="RSV">RSV</option></select>
     </div>
   </div>
@@ -163,18 +198,18 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);height
     <div class="leg-item"><div class="leg-dot" style="background:var(--lvl-vlo)"></div>Very Low</div>
     <div class="leg-item"><div class="leg-dot" style="background:var(--lvl-nd)"></div>No Data</div>
   </div>
-  <div class="cards-grid" id="cards-grid"><div style="color:var(--mut);font-size:12px;padding:20px;text-align:center;grid-column:1/-1">Loading analyticsâ¦</div></div>
+  <div class="cards-grid" id="cards-grid"><div style="color:var(--mut);font-size:12px;padding:20px;text-align:center;grid-column:1/-1">Loading analyticsÃ¢ÂÂ¦</div></div>
 </div>
 
 <!-- COVID TREND VIEW -->
 <div class="trend-view" id="view-ctrend">
   <div class="trend-header">
     <div class="trend-title">COVID-19 Wastewater Trend</div>
-    <div class="trend-sub">Sites ranked by 3-measurement rolling average of percentile rank Â· highest signal first</div>
+    <div class="trend-sub">Sites ranked by 3-measurement rolling average of percentile rank ÃÂ· highest signal first</div>
   </div>
   <table class="trend-table">
-    <thead><tr><th>#</th><th>Site</th><th>3-Week Avg Signal</th><th>Latest Level</th><th>15-day Î</th></tr></thead>
-    <tbody id="tbody-ctrend"><tr><td colspan="5" style="color:var(--mut);padding:20px;text-align:center">Loadingâ¦</td></tr></tbody>
+    <thead><tr><th>#</th><th>Site</th><th>3-Week Avg Signal</th><th>Latest Level</th><th>15-day ÃÂ</th></tr></thead>
+    <tbody id="tbody-ctrend"><tr><td colspan="5" style="color:var(--mut);padding:20px;text-align:center">LoadingÃ¢ÂÂ¦</td></tr></tbody>
   </table>
 </div>
 
@@ -182,19 +217,19 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);height
 <div class="trend-view" id="view-ftrend">
   <div class="trend-header">
     <div class="trend-title">Influenza A Wastewater Trend</div>
-    <div class="trend-sub">Sites ranked by 3-measurement rolling average of percentile rank Â· highest signal first</div>
+    <div class="trend-sub">Sites ranked by 3-measurement rolling average of percentile rank ÃÂ· highest signal first</div>
   </div>
   <table class="trend-table">
-    <thead><tr><th>#</th><th>Site</th><th>3-Week Avg Signal</th><th>Latest Level</th><th>15-day Î</th></tr></thead>
-    <tbody id="tbody-ftrend"><tr><td colspan="5" style="color:var(--mut);padding:20px;text-align:center">Loadingâ¦</td></tr></tbody>
+    <thead><tr><th>#</th><th>Site</th><th>3-Week Avg Signal</th><th>Latest Level</th><th>15-day ÃÂ</th></tr></thead>
+    <tbody id="tbody-ftrend"><tr><td colspan="5" style="color:var(--mut);padding:20px;text-align:center">LoadingÃ¢ÂÂ¦</td></tr></tbody>
   </table>
 </div>
 
 <div class="ftr">
-  <span>Sites: <b id="ft-sites">â</b></span>
-  <span>Reporting: <b id="ft-rep">â</b></span>
-  <span>Updated: <b id="ft-upd">â</b></span>
-  <span style="margin-left:auto">CDC NWSS Â· MapLibre GL 4.7.1 Â· OpenFreeMap</span>
+  <span>Sites: <b id="ft-sites">Ã¢ÂÂ</b></span>
+  <span>Reporting: <b id="ft-rep">Ã¢ÂÂ</b></span>
+  <span>Updated: <b id="ft-upd">Ã¢ÂÂ</b></span>
+  <span style="margin-left:auto">CDC NWSS ÃÂ· MapLibre GL 4.7.1 ÃÂ· OpenFreeMap</span>
 </div>
 <script>
 const MA_SITES=[
@@ -230,7 +265,7 @@ const trendCache={};
 setInterval(()=>document.getElementById('clk').textContent=new Date().toLocaleTimeString('en-US',{hour12:false}),1000);
 
 function switchView(v){
-  ['map','ana','ctrend','ftrend'].forEach(id=>{
+  ['map','ana','ctrend','ftrend','chart'].forEach(id=>{
     const tab=document.getElementById('tab-'+id);
     const view=document.getElementById('view-'+id);
     if(tab) tab.classList.toggle('on',v===id);
@@ -278,7 +313,7 @@ async function loadData(){
   updateMarkers();renderSiteList();
 }
 
-// ââ TREND TABS ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ TREND TABS Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 async function fetchTrendData(pathogen){
   if(trendCache[pathogen]) return trendCache[pathogen];
   try{
@@ -347,7 +382,7 @@ async function renderTrend(pathogen,tbodyId){
   }).join('');
 }
 
-// ââ MAP âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ MAP Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 window.addEventListener('load', async function(){
   mbl=new maplibregl.Map({container:'map',style:'https://tiles.openfreemap.org/styles/liberty',center:[-71.8,42.3],zoom:7.2,attributionControl:false});
   mbl.addControl(new maplibregl.NavigationControl(),'top-right');
@@ -368,6 +403,150 @@ function renderSiteList(){const el=document.getElementById('site-list');const so
 
 function renderAnalytics(){const sortBy=document.getElementById('ana-sort')?.value||'level';const fp=document.getElementById('ana-filter')?.value||'all';const ps=fp==='all'?PATHOGENS:[fp];let sites=[...MA_SITES];if(sortBy==='level')sites.sort((a,b)=>Math.max(...ps.map(p=>lvlRank(siteData[b.id]?.[p]?.level||'No Data')))-Math.max(...ps.map(p=>lvlRank(siteData[a.id]?.[p]?.level||'No Data'))));else if(sortBy==='name')sites.sort((a,b)=>a.name.localeCompare(b.name));else sites.sort((a,b)=>b.pop-a.pop);document.getElementById('cards-grid').innerHTML=sites.map(s=>buildCard(s,ps)).join('');}
 function buildCard(s,ps){const d=siteData[s.id]||{};const pf=s.pop>=1e6?(s.pop/1e6).toFixed(1)+'M':(s.pop/1000).toFixed(0)+'K';const segs=ps.map(p=>{const r=lvlRank((d[p]||{}).level||'No Data');return '<div class="spec-seg" style="flex:'+Math.max(10,r*20)+';background:'+PATH_COLOR[p]+';opacity:'+(0.3+r*0.14)+';"></div>';}).join('');const pills=ps.map(p=>{const info=d[p]||{};const lvl=info.level||'No Data';const col=lvlColor(lvl);const ptc=info.ptc15d;const tr=ptc==null?'':ptc>10?'\u2191':ptc<-10?'\u2193':'\u2192';const tc=ptc>10?'var(--bad)':ptc<-10?'var(--ok)':'var(--mut)';return '<div class="agent-pill"><div><div style="font-size:9px;font-weight:700;color:'+PATH_COLOR[p]+'">'+PATH_LABEL[p]+'</div><div class="agent-name">'+(info.synthetic?'~':'')+lvl+'</div></div><div style="text-align:right"><div class="agent-val" style="color:'+col+'">'+(info.percentile!=null?Math.round(info.percentile)+'th':'\u2014')+'</div><div style="font-size:9px;color:'+tc+'">'+tr+(ptc!=null?(ptc>0?'+':'')+Math.round(ptc)+'%':'')+'</div></div></div>';}).join('');const mx=ps.reduce((m,p)=>{const r=lvlRank((d[p]||{}).level||'No Data');return r>lvlRank(m)?(d[p]?.level||'No Data'):m;},'No Data');return '<div class="site-card" style="border-left:3px solid '+lvlColor(mx)+'"><div class="card-hdr"><div class="card-dot" style="background:'+lvlColor(mx)+'"></div><div class="card-name">'+s.name+'</div><div class="card-pop">'+s.county+' \u00b7 '+pf+'</div></div><div class="card-body"><div class="spectrum-wrap"><div class="spectrum-label">SIGNAL SPECTRUM</div><div class="spectrum-bar">'+segs+'</div></div><div class="agent-grid">'+pills+'</div></div></div>';}
+
+
+// ── CHART VIEW ────────────────────────────────────────────────────────────────
+let chartPathogen = 'SARS-CoV-2';
+const CHART_COLORS = {'SARS-CoV-2':'#ef4444','Influenza A':'#f59e0b','RSV':'#38bdf8'};
+
+function setChartPathogen(p) {
+  chartPathogen = p;
+  ['covid','flu','rsv'].forEach(k => {
+    const btn = document.getElementById('cpBtn-'+k);
+    const col = k==='covid'?'#ef4444':k==='flu'?'#f59e0b':'#38bdf8';
+    const pathKey = k==='covid'?'SARS-CoV-2':k==='flu'?'Influenza A':'RSV';
+    if(btn) {
+      btn.classList.toggle('on', p===pathKey);
+      btn.style.background = p===pathKey ? col : '';
+      btn.style.color = p===pathKey ? '#fff' : '';
+    }
+  });
+  renderChart();
+}
+
+async function renderChart() {
+  const grid = document.getElementById('chart-grid');
+  if(!grid) return;
+
+  const sortBy = document.getElementById('chart-sort-sel')?.value || 'signal';
+  const col = CHART_COLORS[chartPathogen] || '#4f9cff';
+
+  // Build site list with data
+  let sites = MA_SITES.map(s => {
+    const info = siteData[s.id]?.[chartPathogen] || {};
+    return {
+      s,
+      pct: info.percentile ?? 0,
+      lvl: info.level || 'No Data',
+      ptc: info.ptc15d ?? null,
+      synthetic: info.synthetic ?? true
+    };
+  });
+
+  // Sort
+  if(sortBy === 'signal') sites.sort((a,b) => b.pct - a.pct);
+  else if(sortBy === 'name') sites.sort((a,b) => a.s.name.localeCompare(b.s.name));
+  else if(sortBy === 'pop') sites.sort((a,b) => b.s.pop - a.s.pop);
+  else if(sortBy === 'delta') sites.sort((a,b) => (b.ptc??-999) - (a.ptc??-999));
+
+  const maxPct = Math.max(...sites.map(s=>s.pct), 1);
+
+  // Legend
+  const legend = document.getElementById('chart-legend');
+  if(legend) {
+    legend.innerHTML = [
+      ['Very High','#ef4444'],['High','#f97316'],['Moderate','#f59e0b'],
+      ['Low','#38bdf8'],['Very Low','#a78bfa'],['No Data','#6b7a99']
+    ].map(([l,c]) => `<div class="chart-legend-item"><div class="chart-legend-bar" style="background:${c}"></div>${l}</div>`).join('');
+  }
+
+  // Build grid rows
+  let rows = '';
+
+  // Header row
+  rows += `<div class="chart-header-row">
+    <div class="town-label">COLLECTION SITE</div>
+    <div class="chart-bar-cell">SIGNAL STRENGTH (PERCENTILE RANK)</div>
+    <div class="stats-cell" style="gap:8px;">
+      <div style="min-width:32px;text-align:center">RANK</div>
+      <div style="min-width:52px;text-align:center">PCT</div>
+      <div style="min-width:52px;text-align:center">LEVEL</div>
+      <div style="min-width:52px;text-align:center">15-DAY</div>
+    </div>
+  </div>`;
+
+  sites.forEach(({s, pct, lvl, ptc, synthetic}, i) => {
+    const barW = pct > 0 ? Math.round((pct/maxPct)*100) : 0;
+    const barCol = lvlColor(lvl);
+    const ptcStr = ptc!=null ? (ptc>0?'+':'')+Math.round(ptc)+'%' : '—';
+    const ptcCol = ptc>10?'var(--bad)':ptc<-10?'var(--ok)':'#8fa0c0';
+    const pctStr = pct > 0 ? Math.round(pct)+'th' : '—';
+    const lvlShort = lvl.replace('Limited/','').replace(' Data','').replace('Very ','V.');
+    const popStr = s.pop>=1e6?(s.pop/1e6).toFixed(1)+'M':(s.pop/1000).toFixed(0)+'K';
+    const synMark = synthetic ? ' <span style="color:#6b8cba;font-size:9px;font-weight:400">~</span>' : '';
+
+    rows += `<div class="chart-row">
+      <div class="town-label">
+        <div>
+          <div class="town-name">${s.name}${synMark}</div>
+          <div class="town-pop">${s.county} · ${popStr}</div>
+        </div>
+      </div>
+      <div class="chart-bar-cell">
+        <div class="chart-bar-outer">
+          <div class="chart-bar-inner" style="width:${barW}%;background:${barCol}20;border-right:${barW>0?'3px solid '+barCol:'none'}">
+            <div style="position:absolute;left:0;top:0;height:100%;width:${barW}%;background:linear-gradient(90deg,${barCol}40,${barCol}90);border-radius:4px;"></div>
+            ${barW>12?'<span class="chart-bar-pct-label" style="position:relative;z-index:1;">'+pctStr+'</span>':''}
+          </div>
+          ${barW<=12&&pct>0?'<span style="position:absolute;left:'+(barW+1)+'%;top:50%;transform:translateY(-50%);font-size:10px;font-weight:700;color:'+barCol+'">'+pctStr+'</span>':''}
+        </div>
+      </div>
+      <div class="stats-cell">
+        <div class="stat-rank">${i+1}</div>
+        <div class="stat-block">
+          <div class="stat-val" style="color:${barCol}">${pctStr}</div>
+          <div class="stat-lbl">PERCENTILE</div>
+        </div>
+        <div class="stat-block">
+          <span class="lvl-pill ${lvlCls(lvl)}" style="font-size:10px;padding:3px 7px;">${lvlShort}</span>
+        </div>
+        <div class="stat-block">
+          <div class="stat-val" style="color:${ptcCol}">${ptcStr}</div>
+          <div class="stat-lbl">15-DAY</div>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  grid.innerHTML = rows;
+}
+
 </script>
+
+<!-- CHART VIEW -->
+<div class="chart-view" id="view-chart">
+  <div class="chart-header">
+    <div>
+      <div class="chart-title">Wastewater Signal — All Sites</div>
+      <div class="chart-sub">Horizontal bar chart · towns stacked vertically · percentile rank signal strength</div>
+    </div>
+    <div class="chart-controls">
+      <button class="chart-pathogen-btn on" id="cpBtn-covid" onclick="setChartPathogen('SARS-CoV-2')" style="background:#ef4444">COVID-19</button>
+      <button class="chart-pathogen-btn" id="cpBtn-flu" onclick="setChartPathogen('Influenza A')" style="">FLU A</button>
+      <button class="chart-pathogen-btn" id="cpBtn-rsv" onclick="setChartPathogen('RSV')" style="">RSV</button>
+      <select class="chart-sort-sel" id="chart-sort-sel" onchange="renderChart()">
+        <option value="signal">Sort: Signal (high→low)</option>
+        <option value="name">Sort: Name (A→Z)</option>
+        <option value="pop">Sort: Population</option>
+        <option value="delta">Sort: 15-day change</option>
+      </select>
+    </div>
+  </div>
+  <div class="chart-legend" id="chart-legend"></div>
+  <div class="chart-grid" id="chart-grid">
+    <div style="color:var(--mut);font-size:12px;padding:20px;grid-column:1/-1;text-align:center">Loading…</div>
+  </div>
+</div>
+
 </body>
 </html>
