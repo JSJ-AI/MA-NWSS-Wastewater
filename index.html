@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>MA NWSS — Wastewater Surveillance</title>
+<title>MA NWSS â Wastewater Surveillance</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
@@ -41,10 +41,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);height
 .srow{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:6px;margin-bottom:5px;background:var(--sur2);cursor:pointer;transition:background .15s;}
 .srow:hover{background:var(--brd);}.sdot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
 .sname{flex:1;font-size:11px;font-weight:500;line-height:1.3;}.spop{font-size:9px;color:var(--mut);}
-.slvl{font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;white-space:nowrap;}
-.lvl-vlo{background:rgba(167,139,250,.15);color:var(--lvl-vlo);}.lvl-lo{background:rgba(56,189,248,.15);color:var(--lvl-lo);}
-.lvl-mod{background:rgba(245,158,11,.15);color:var(--lvl-mod);}.lvl-hi{background:rgba(249,115,22,.15);color:var(--lvl-hi);}
-.lvl-vhi{background:rgba(239,68,68,.15);color:var(--lvl-vhi);}.lvl-nd{background:rgba(107,122,153,.1);color:var(--lvl-nd);}
+.slvl{font-size:10px;font-weight:800;padding:3px 8px;border-radius:4px;white-space:nowrap;}
+.lvl-vlo{background:rgba(167,139,250,.2);color:#c4b0ff;border:1px solid rgba(167,139,250,.4);}.lvl-lo{background:rgba(56,189,248,.2);color:#70d4ff;border:1px solid rgba(56,189,248,.4);}
+.lvl-mod{background:rgba(245,158,11,.25);color:#ffd060;border:1px solid rgba(245,158,11,.5);}.lvl-hi{background:rgba(249,115,22,.3);color:#ffb060;border:1px solid rgba(249,115,22,.5);}
+.lvl-vhi{background:rgba(239,68,68,.35);color:#ff9090;border:1px solid rgba(239,68,68,.5);}.lvl-nd{background:rgba(107,122,153,.15);color:#8fa0c0;border:1px solid rgba(107,122,153,.3);}
 .analytics-view{flex:1;min-height:0;overflow-y:auto;display:none;padding:20px;}.analytics-view.on{display:block;}
 .ana-top{display:flex;gap:14px;align-items:center;margin-bottom:18px;flex-wrap:wrap;}
 .ana-title{font-size:18px;font-weight:700;}.ana-sub{font-size:12px;color:var(--mut);margin-top:2px;}
@@ -68,22 +68,22 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);height
 /* TREND TABS */
 .trend-view{flex:1;min-height:0;overflow-y:auto;display:none;padding:20px;}.trend-view.on{display:block;}
 .trend-header{margin-bottom:20px;}
-.trend-title{font-size:18px;font-weight:700;margin-bottom:4px;}
-.trend-sub{font-size:12px;color:var(--mut);}
+.trend-title{font-size:22px;font-weight:700;margin-bottom:6px;color:#f0f4ff;}
+.trend-sub{font-size:13px;color:#8fa0c0;}
 .trend-table{width:100%;border-collapse:collapse;font-size:12px;}
-.trend-table th{text-align:left;padding:8px 12px;border-bottom:2px solid var(--brd);color:var(--mut);font-size:10px;font-weight:700;letter-spacing:.06em;white-space:nowrap;}
-.trend-table td{padding:10px 12px;border-bottom:1px solid var(--brd);vertical-align:middle;}
+.trend-table th{text-align:left;padding:10px 14px;border-bottom:2px solid var(--brd);color:#8fa0c0;font-size:11px;font-weight:700;letter-spacing:.06em;white-space:nowrap;}
+.trend-table td{padding:13px 14px;border-bottom:1px solid var(--brd);vertical-align:middle;}
 .trend-table tr:last-child td{border-bottom:none;}
 .trend-table tbody tr:hover td{background:var(--sur2);}
-.rank-num{font-size:14px;font-weight:700;color:var(--mut);width:30px;text-align:center;}
-.site-cell-name{font-weight:600;font-size:13px;color:var(--txt);}
-.site-cell-sub{font-size:10px;color:var(--mut);margin-top:2px;}
+.rank-num{font-size:16px;font-weight:700;color:#6b8cba;width:36px;text-align:center;}
+.site-cell-name{font-weight:700;font-size:15px;color:#f0f4ff;}
+.site-cell-sub{font-size:11px;color:#8fa0c0;margin-top:3px;}
 .bar-wrap{display:flex;align-items:center;gap:10px;}
-.bar-bg{flex:1;max-width:160px;height:10px;border-radius:5px;background:var(--sur2);overflow:hidden;}
-.bar-fill{height:100%;border-radius:5px;}
-.bar-val{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;min-width:60px;}
-.lvl-pill{display:inline-block;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:700;white-space:nowrap;}
-.delta-cell{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;}
+.bar-bg{flex:1;max-width:180px;height:14px;border-radius:7px;background:var(--sur2);overflow:hidden;}
+.bar-fill{height:100%;border-radius:7px;}
+.bar-val{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;min-width:70px;}
+.lvl-pill{display:inline-block;padding:5px 10px;border-radius:5px;font-size:12px;font-weight:800;white-space:nowrap;letter-spacing:.03em;}
+.delta-cell{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;}
 /* MAPLIBRE */
 .maplibregl-popup-content{padding:12px;border-radius:8px;max-width:240px;font-family:'Inter',sans-serif;background:#0f172a;color:#e8edf5;border:1px solid #1e2d47;}
 .ppop-title{font-size:13px;font-weight:700;margin-bottom:8px;}
@@ -121,9 +121,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);height
       <div class="ptab" onclick="sPTab('legend')">LEGEND</div>
     </div>
     <div class="pbody">
-      <div class="psec on" id="sec-sites"><div id="site-list" style="color:var(--mut);font-size:11px;padding:16px;text-align:center">Loading NWSS data…</div></div>
+      <div class="psec on" id="sec-sites"><div id="site-list" style="color:var(--mut);font-size:11px;padding:16px;text-align:center">Loading NWSS dataâ¦</div></div>
       <div class="psec" id="sec-legend">
-        <div style="font-size:11px;color:var(--mut);margin-bottom:10px;line-height:1.5">CDC NWSS — National Wastewater Surveillance System. Sites report weekly. Data updated every Friday.</div>
+        <div style="font-size:11px;color:var(--mut);margin-bottom:10px;line-height:1.5">CDC NWSS â National Wastewater Surveillance System. Sites report weekly. Data updated every Friday.</div>
         <div style="font-size:10px;font-weight:700;color:var(--txt);margin-bottom:8px;letter-spacing:.06em">VIRAL ACTIVITY LEVEL</div>
         <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
           <div class="srow" style="cursor:default"><div class="sdot" style="background:var(--lvl-vhi)"></div><div class="sname">Very High</div><div class="slvl lvl-vhi">VERY HIGH</div></div>
@@ -138,7 +138,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);height
           <b style="color:var(--txt)">Pathogens:</b> SARS-CoV-2, Influenza A, RSV, Mpox, Norovirus (select sites)<br>
           <b style="color:var(--txt)">Method:</b> qPCR / ddPCR on 24-hr flow-weighted composite influent samples<br>
           <b style="color:var(--txt)">Normalization:</b> Flow rate + population equivalents<br>
-          <b style="color:var(--txt)">Lead time:</b> ~4–7 days ahead of clinical case counts
+          <b style="color:var(--txt)">Lead time:</b> ~4â7 days ahead of clinical case counts
         </div>
       </div>
     </div>
@@ -148,9 +148,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);height
 <!-- ANALYTICS VIEW -->
 <div class="analytics-view" id="view-ana">
   <div class="ana-top">
-    <div><div class="ana-title">Wastewater Signal by Site</div><div class="ana-sub">MA NWSS monitoring stations — latest week · CDC data</div></div>
+    <div><div class="ana-title">Wastewater Signal by Site</div><div class="ana-sub">MA NWSS monitoring stations â latest week Â· CDC data</div></div>
     <div class="ana-controls">
-      <select class="sel" id="ana-sort" onchange="renderAnalytics()"><option value="level">Sort: Level (high→low)</option><option value="name">Sort: Name (A→Z)</option><option value="pop">Sort: Population</option></select>
+      <select class="sel" id="ana-sort" onchange="renderAnalytics()"><option value="level">Sort: Level (highâlow)</option><option value="name">Sort: Name (AâZ)</option><option value="pop">Sort: Population</option></select>
       <select class="sel" id="ana-filter" onchange="renderAnalytics()"><option value="all">All pathogens</option><option value="SARS-CoV-2">COVID-19</option><option value="Influenza A">Influenza A</option><option value="RSV">RSV</option></select>
     </div>
   </div>
@@ -163,18 +163,18 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);height
     <div class="leg-item"><div class="leg-dot" style="background:var(--lvl-vlo)"></div>Very Low</div>
     <div class="leg-item"><div class="leg-dot" style="background:var(--lvl-nd)"></div>No Data</div>
   </div>
-  <div class="cards-grid" id="cards-grid"><div style="color:var(--mut);font-size:12px;padding:20px;text-align:center;grid-column:1/-1">Loading analytics…</div></div>
+  <div class="cards-grid" id="cards-grid"><div style="color:var(--mut);font-size:12px;padding:20px;text-align:center;grid-column:1/-1">Loading analyticsâ¦</div></div>
 </div>
 
 <!-- COVID TREND VIEW -->
 <div class="trend-view" id="view-ctrend">
   <div class="trend-header">
     <div class="trend-title">COVID-19 Wastewater Trend</div>
-    <div class="trend-sub">Sites ranked by 3-measurement rolling average of percentile rank · highest signal first</div>
+    <div class="trend-sub">Sites ranked by 3-measurement rolling average of percentile rank Â· highest signal first</div>
   </div>
   <table class="trend-table">
-    <thead><tr><th>#</th><th>Site</th><th>3-Week Avg Signal</th><th>Latest Level</th><th>15-day Δ</th></tr></thead>
-    <tbody id="tbody-ctrend"><tr><td colspan="5" style="color:var(--mut);padding:20px;text-align:center">Loading…</td></tr></tbody>
+    <thead><tr><th>#</th><th>Site</th><th>3-Week Avg Signal</th><th>Latest Level</th><th>15-day Î</th></tr></thead>
+    <tbody id="tbody-ctrend"><tr><td colspan="5" style="color:var(--mut);padding:20px;text-align:center">Loadingâ¦</td></tr></tbody>
   </table>
 </div>
 
@@ -182,19 +182,19 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);height
 <div class="trend-view" id="view-ftrend">
   <div class="trend-header">
     <div class="trend-title">Influenza A Wastewater Trend</div>
-    <div class="trend-sub">Sites ranked by 3-measurement rolling average of percentile rank · highest signal first</div>
+    <div class="trend-sub">Sites ranked by 3-measurement rolling average of percentile rank Â· highest signal first</div>
   </div>
   <table class="trend-table">
-    <thead><tr><th>#</th><th>Site</th><th>3-Week Avg Signal</th><th>Latest Level</th><th>15-day Δ</th></tr></thead>
-    <tbody id="tbody-ftrend"><tr><td colspan="5" style="color:var(--mut);padding:20px;text-align:center">Loading…</td></tr></tbody>
+    <thead><tr><th>#</th><th>Site</th><th>3-Week Avg Signal</th><th>Latest Level</th><th>15-day Î</th></tr></thead>
+    <tbody id="tbody-ftrend"><tr><td colspan="5" style="color:var(--mut);padding:20px;text-align:center">Loadingâ¦</td></tr></tbody>
   </table>
 </div>
 
 <div class="ftr">
-  <span>Sites: <b id="ft-sites">—</b></span>
-  <span>Reporting: <b id="ft-rep">—</b></span>
-  <span>Updated: <b id="ft-upd">—</b></span>
-  <span style="margin-left:auto">CDC NWSS · MapLibre GL 4.7.1 · OpenFreeMap</span>
+  <span>Sites: <b id="ft-sites">â</b></span>
+  <span>Reporting: <b id="ft-rep">â</b></span>
+  <span>Updated: <b id="ft-upd">â</b></span>
+  <span style="margin-left:auto">CDC NWSS Â· MapLibre GL 4.7.1 Â· OpenFreeMap</span>
 </div>
 <script>
 const MA_SITES=[
@@ -278,7 +278,7 @@ async function loadData(){
   updateMarkers();renderSiteList();
 }
 
-// ── TREND TABS ────────────────────────────────────────────────────────────────
+// ââ TREND TABS ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 async function fetchTrendData(pathogen){
   if(trendCache[pathogen]) return trendCache[pathogen];
   try{
@@ -347,7 +347,7 @@ async function renderTrend(pathogen,tbodyId){
   }).join('');
 }
 
-// ── MAP ───────────────────────────────────────────────────────────────────────
+// ââ MAP âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 window.addEventListener('load', async function(){
   mbl=new maplibregl.Map({container:'map',style:'https://tiles.openfreemap.org/styles/liberty',center:[-71.8,42.3],zoom:7.2,attributionControl:false});
   mbl.addControl(new maplibregl.NavigationControl(),'top-right');
